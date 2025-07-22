@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/image")
-public class Controller {
+@RequestMapping("/api/image")
+public class APIController {
 
     private static final String UPLOAD_DIR = "images";
 
