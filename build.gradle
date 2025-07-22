@@ -1,0 +1,44 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.cywedding'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// --- Vue 빌드 및 정적 파일 복사 자동화 ---
+task buildFrontend(type: Exec) {
+    workingDir '../front'
+    commandLine 'npm.cmd', 'run', 'build'
+}
+
+task copyFront(type: Copy) {
+    dependsOn buildFrontend
+    from('../front/dist')
+    into('src/main/resources/static')
+}
+
+bootRun.dependsOn copyFront
+processResources.dependsOn copyFront
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
