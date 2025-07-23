@@ -1,0 +1,1 @@
+web: java -jar $(ls back/build/libs/*-SNAPSHOT.jar | grep -v plain)
