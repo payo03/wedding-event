@@ -67,17 +67,6 @@ public class APIController {
             String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HHmmss"));
             String fileName = code + "_" + timeStamp + extension;
 
-            /*
-            // 저장 경로 생성 (예: uploads 폴더)
-            File uploadDir = new File(UPLOAD_DIR);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs(); // 폴더가 없으면 생성
-            }
-
-            // 저장 경로
-            File destination = new File(uploadDir, fileName);
-            Files.copy(file.getInputStream(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            */
             imageService.uploadImage(code, fileName, file.getBytes());
 
             // 성공 응답
@@ -100,34 +89,6 @@ public class APIController {
     public ResponseEntity<?> getImageList(@RequestHeader("X-QR-CODE") String code) {
         Map<String, Object> returnMap = new HashMap<>();
 
-        /*
-        File folder = new File(UPLOAD_DIR);
-
-        // 폴더가 없으면 에러 응답
-        if (!folder.exists() || !folder.isDirectory()) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "message", "❌ 이미지 폴더가 존재하지 않습니다. ❌"
-            ));
-        }
-
-        File[] files = folder.listFiles();
-
-        List<Map<String, String>> imageList = new ArrayList<>();
-        if (files != null) {
-            for (File file : files) {
-                String fileURL = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/api/image/files/")
-                        .path(file.getName())
-                        .toUriString();
-
-                imageList.add(Map.of(
-                        "name", file.getName(),
-                        "url", fileURL
-                ));
-            }
-        }
-        */
         try {
             List<Map<String, Object>> imageList = imageService.selectImageList();
 
@@ -148,28 +109,13 @@ public class APIController {
         Map<String, Object> returnMap = new HashMap<>();
 
         try {
-            /*
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
-            UrlResource resource = new UrlResource(filePath.toUri());
-            String contentType = Files.probeContentType(filePath);
+            Path path = Paths.get(filename);  // 확장자 기반으로만 판단
+            String mimeType = Files.probeContentType(path);
+            MediaType contentType = MediaType.APPLICATION_OCTET_STREAM; // fallback
 
-            if (resource.exists()) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .body(resource);
-            } else {
-                return ResponseEntity.status(404).body(Map.of(
-                        "success", false,
-                        "message", "❌ 해당 파일을 찾을 수 없습니다. ❌"
-                ));
+            if (mimeType != null) {
+                contentType = MediaType.parseMediaType(mimeType);
             }
-            */
-            String ext = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
-            MediaType contentType = switch (ext) {
-                case "png" -> MediaType.IMAGE_PNG;
-                case "gif" -> MediaType.IMAGE_GIF;
-                default -> MediaType.IMAGE_JPEG;
-            };
 
             byte[] imageData = imageService.selectImage(filename);
             if (imageData == null) {
