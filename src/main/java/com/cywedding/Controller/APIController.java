@@ -1,27 +1,20 @@
 package com.cywedding.controller;
 
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.cywedding.common.DMLType;
-import com.cywedding.dto.QRUser;
 import com.cywedding.service.ImageService;
 import com.cywedding.service.QRUserService;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +25,6 @@ public class APIController {
 
     private final QRUserService userService;
     private final ImageService imageService;
-    private static final String UPLOAD_DIR = "images";
 
     public APIController(QRUserService userService, ImageService imageService) {
         this.userService = userService;
