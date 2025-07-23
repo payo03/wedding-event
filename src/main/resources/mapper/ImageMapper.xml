@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.ImageMapper">
+
+    <!-- SELECT -->
+    <select id="selectImageList" resultType="map">
+        SELECT
+            file_name AS name,
+            '/api/image/files/' || file_name AS url
+        FROM image
+    </select>
+
+    <select id="selectImage" parameterType="string" resultType="map">
+        SELECT file
+        FROM image
+        WHERE file_name = #{fileName}
+    </select>
+
+    <!-- INSERT -->
+    <insert id="uploadImage" parameterType="map">
+        INSERT INTO image (qr_code, file_name, file)
+        VALUES (#{code}, #{fileName}, #{file})
+    </insert>
+
+</mapper>

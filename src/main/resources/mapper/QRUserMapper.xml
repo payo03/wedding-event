@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.QRUserMapper">
+    
+    <!-- SELECT -->
+    <select id="fetchQRUser" parameterType="string" resultType="com.cywedding.dto.QRUser">
+        SELECT qr_code, is_upload, is_vote, is_admin
+        FROM qr_user 
+        WHERE qr_code = #{code}
+    </select>
+
+    <!-- UPDATE -->
+    <update id="updateUser" parameterType="map">
+        UPDATE qr_user
+        <set>
+            <choose>
+                <when test="type.name() == 'UPLOAD'">
+                    is_upload = true
+                </when>
+                <when test="type.name() == 'VOTE'">
+                    is_vote = true
+                </when>
+            </choose>
+        </set>
+        WHERE qr_code = #{code}
+    </update>
+
+</mapper> 
