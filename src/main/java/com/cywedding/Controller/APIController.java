@@ -66,7 +66,7 @@ public class APIController {
         if (files != null) {
             for (File file : files) {
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/image/files/")
+                        .path("/api/image/files/")
                         .path(file.getName())
                         .toUriString();
                 imageList.add(fileDownloadUri);
