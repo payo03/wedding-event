@@ -15,6 +15,7 @@ public class VueController {
     
     @GetMapping("/qr/{qrcode}")
     public String qrLogin(@PathVariable(name = "qrcode", required = true) String path) {
+        System.out.println("QR Code Path: " + path);
 
         return "forward:/index.html";
     }
