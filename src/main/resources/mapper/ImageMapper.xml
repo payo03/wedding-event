@@ -29,10 +29,4 @@
         VALUES (#{qrCode}, #{fileName}, #{file})
     </insert>
 
-    <!-- INSERT VOTE -->
-    <insert id="insertVote" parameterType="com.cywedding.dto.Image">
-        INSERT INTO vote (qr_code, file_name)
-        VALUES (#{qrCode}, #{fileName})
-    </insert>
-
 </mapper>

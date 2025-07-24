@@ -14,5 +14,6 @@ public interface ImageMapper {
     Map<String, Object> selectImage(String fileName);
 
     void uploadImage(Image image);
-    void insertVote(Image image);
+    
+    void deleteImage(String fileName);
 }

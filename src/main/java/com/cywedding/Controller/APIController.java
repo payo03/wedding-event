@@ -7,7 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cywedding.common.DMLType;
 import com.cywedding.service.ImageService;
+import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
+import com.cywedding.dto.QRUser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,10 +27,12 @@ public class APIController {
 
     private final QRUserService userService;
     private final ImageService imageService;
+    private final VoteService voteService;
 
-    public APIController(QRUserService userService, ImageService imageService) {
+    public APIController(QRUserService userService, ImageService imageService, VoteService voteService) {
         this.userService = userService;
         this.imageService = imageService;
+        this.voteService = voteService;
     }
 
     @PostMapping("/upload")
@@ -81,11 +85,13 @@ public class APIController {
     public ResponseEntity<?> getImageList(@RequestHeader("X-QR-CODE") String code) {
         Map<String, Object> returnMap = new HashMap<>();
 
+        QRUser user = userService.fetchQRUser(code);
         try {
             List<Map<String, Object>> imageList = imageService.selectImageList();
 
             returnMap.put("success", true);
             returnMap.put("images", imageList);
+            returnMap.put("user", user);
 
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
@@ -101,9 +107,9 @@ public class APIController {
         Map<String, Object> returnMap = new HashMap<>();
 
         try {
-            Path path = Paths.get(filename);  // 확장자 기반으로만 판단
+            Path path = Paths.get(filename);
             String mimeType = Files.probeContentType(path);
-            MediaType contentType = MediaType.APPLICATION_OCTET_STREAM; // fallback
+            MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
 
             if (mimeType != null) {
                 contentType = MediaType.parseMediaType(mimeType);
@@ -137,27 +143,56 @@ public class APIController {
         Map<String, Object> returnMap = new HashMap<>();
 
         String fileName = infoMap.get("fileName");
-        Boolean isValid = userService.validDML(code, DMLType.VOTE);
 
-        if (!isValid) {
-            returnMap.put("success", false);
-            returnMap.put("message", "❌ 이미 투표하셨습니다. ❌");
-
-            return ResponseEntity.badRequest().body(returnMap);
-        }
-
+        String message = "✅ 투표 완료! ✅";
         try {
-            imageService.voteImage(code, fileName);
+            Boolean isValid = userService.validDML(code, DMLType.VOTE);
+            if(!isValid) {
+                voteService.deleteVote(code, fileName);
+                message = "♻️ 재투표 완료! ♻️";
+            }
+            
+            voteService.voteImage(code, fileName);
 
             returnMap.put("success", true);
-            returnMap.put("message", "✅ 투표 완료! ✅");
+            returnMap.put("message", message);
             returnMap.put("fileName", fileName);
 
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
             e.printStackTrace();
+            message = "❌ 투표 처리 중 오류 발생 ❌";
+
             returnMap.put("success", false);
-            returnMap.put("message", "❌ 투표 처리 중 오류 발생 ❌");
+            returnMap.put("message", message);
+
+            return ResponseEntity.internalServerError().body(returnMap);
+        }
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteImage(
+            @RequestHeader("X-QR-CODE") String code,
+            @RequestBody Map<String, String> infoMap
+    ) {
+        Map<String, Object> returnMap = new HashMap<>();
+
+        String fileName = infoMap.get("fileName");
+
+        String message = "✅ 삭제 완료! ✅";
+        try {
+            imageService.deleteImage(code, fileName);
+
+            returnMap.put("success", true);
+            returnMap.put("message", message);
+
+            return ResponseEntity.ok(returnMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            message = "❌ 삭제 처리 중 오류 발생 ❌";
+
+            returnMap.put("success", false);
+            returnMap.put("message", message);
 
             return ResponseEntity.internalServerError().body(returnMap);
         }
