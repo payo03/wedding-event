@@ -18,7 +18,7 @@
     </select>
 
     <select id="selectImage" parameterType="string" resultType="map">
-        SELECT file
+        SELECT qr_code as code, file
         FROM image
         WHERE file_name = #{fileName}
     </select>
@@ -27,6 +27,12 @@
     <insert id="uploadImage" parameterType="com.cywedding.dto.Image">
         INSERT INTO image (qr_code, file_name, file)
         VALUES (#{qrCode}, #{fileName}, #{file})
+    </insert>
+
+    <!-- DELETE -->
+    <insert id="deleteImage" parameterType="string">
+        DELETE FROM image
+        WHERE file_name = #{fileName}
     </insert>
 
 </mapper>
