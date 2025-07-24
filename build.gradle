@@ -54,7 +54,11 @@ task copyFront(type: Copy) {
     outputs.dir('src/main/resources/static')
 }
 
-bootRun.dependsOn copyFront
+bootJar {
+    archiveFileName = 'app.jar'
+}
+
+bootRun.dependsOn copyFront, bootJar
 processResources.dependsOn copyFront
 
 tasks.named('test') {

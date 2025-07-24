@@ -61,7 +61,7 @@ public class QRUserService {
         return isValid;
     }
 
-    public void updateUserList(QRUser user) { updateUserList(List.of(user)); }
+    public void updateUserList(QRUser user) { this.updateUserList(List.of(user)); }
 
     public void updateUserList(List<QRUser> userList) {
         userMapper.updateUserList(userList);

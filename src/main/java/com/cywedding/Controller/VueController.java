@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.cywedding.service.QRUserService;
-
 @Controller
 public class VueController {
     private static final Logger logger = LoggerFactory.getLogger(VueController.class);
