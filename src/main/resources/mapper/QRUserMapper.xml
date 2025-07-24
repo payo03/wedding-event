@@ -14,19 +14,24 @@
     </select>
 
     <!-- UPDATE -->
-    <update id="updateUser" parameterType="com.cywedding.dto.QRUser">
-        UPDATE qr_user
-        <set>
-            <choose>
-                <when test="type == 'UPLOAD'">
-                    is_upload = true
-                </when>
-                <when test="type == 'VOTE'">
-                    is_vote = true
-                </when>
-            </choose>
-        </set>
-        WHERE qr_code = #{qrCode}
-    </update>
+    <update id="updateUserList" parameterType="map">
+        <foreach collection="userList" item="user" separator=";">
+            UPDATE qr_user
+            <set>
+                <choose>
+                    <when test="user.type == 'UPLOAD'">
+                        is_upload = true
+                    </when>
+                    <when test="user.type == 'VOTE'">
+                        is_vote = true
+                    </when>
+                    <when test="user.type == 'DELETE'">
+                        is_upload = false
+                    </when>
+                </choose>
+            </set>
+            WHERE qr_code = #{user.qrCode}
+        </foreach>
+    </update>    
 
 </mapper>
