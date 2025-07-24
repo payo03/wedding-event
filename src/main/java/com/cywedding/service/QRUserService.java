@@ -1,5 +1,7 @@
 package com.cywedding.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.cywedding.common.DMLType;
@@ -11,11 +13,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class QRUserService {
+    private static final Logger logger = LoggerFactory.getLogger(QRUserService.class);
 
     private final QRUserMapper mapper;
 
     public QRUser fetchQRUser(String code) {
-        System.out.println("QR CODE : [" + code + "]");
+        logger.info("==================================================");
+        logger.info("QR CODE : [{}]", code);
+        logger.info("==================================================");
 
         return mapper.fetchQRUser(code);
     }
@@ -25,9 +30,11 @@ public class QRUserService {
 
         QRUser user = fetchQRUser(code);
         if (user == null) {
-            return false; // QR 코드가 유효하지 않음
+            return false;
         }
-        System.out.println("User : " + user + "");
+        logger.info("==================================================");
+        logger.info("{}", user);
+        logger.info("==================================================");
 
         switch (type) {
             case UPLOAD:

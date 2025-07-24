@@ -136,7 +136,7 @@ public class APIController {
     ) {
         Map<String, Object> returnMap = new HashMap<>();
 
-        String imageName = infoMap.get("imageName");
+        String fileName = infoMap.get("fileName");
         Boolean isValid = userService.validDML(code, DMLType.VOTE);
 
         if (!isValid) {
@@ -147,12 +147,11 @@ public class APIController {
         }
 
         try {
-            // 실제 투표 수 증가 처리
-            // imageService.voteImage(imageName, code);
+            imageService.voteImage(code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", "✅ 투표 완료! ✅");
-            returnMap.put("imageName", imageName);
+            returnMap.put("fileName", fileName);
 
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
