@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/image")
+@RequestMapping("/api")
 public class APIController {
 
     private final QRUserService userService;
@@ -35,19 +35,14 @@ public class APIController {
         this.voteService = voteService;
     }
 
-    @GetMapping("/check")
+    @GetMapping("/user/check")
     public ResponseEntity<?> checkUser(@RequestHeader("X-QR-CODE") String code) {
-        Map<String, Object> returnMap = new HashMap<>();
-
-        Boolean isValid = userService.validDML(code, DMLType.UPLOAD);
+        QRUser user = userService.fetchQRUser(code);
         
-        returnMap.put("success", isValid);
-        returnMap.put("message", isValid ? "✅ 업로드 가능! ✅" : "❌ 업로드한 사진이 존재합니다. ❌");
-
-        return ResponseEntity.ok(returnMap);
+        return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/image/upload")
     @SuppressWarnings("null")
     public ResponseEntity<?> uploadImage(
             @RequestHeader("X-QR-CODE") String code,
@@ -93,7 +88,7 @@ public class APIController {
         }
     }
 
-    @GetMapping("/list")
+    @GetMapping("/image/list")
     public ResponseEntity<?> getImageList(@RequestHeader("X-QR-CODE") String code) {
         Map<String, Object> returnMap = new HashMap<>();
 
@@ -114,7 +109,7 @@ public class APIController {
         }
     }
 
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping("/image/files/{filename:.+}")
     public ResponseEntity<?> getImageFile(@PathVariable String filename) throws Exception {
         Map<String, Object> returnMap = new HashMap<>();
 
@@ -141,7 +136,7 @@ public class APIController {
         }
     }
 
-    @PostMapping("/vote")
+    @PostMapping("/image/vote")
     public ResponseEntity<?> voteImage(
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
@@ -176,7 +171,7 @@ public class APIController {
         }
     }
 
-    @PostMapping("/delete")
+    @PostMapping("/image/delete")
     public ResponseEntity<?> deleteImage(
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap

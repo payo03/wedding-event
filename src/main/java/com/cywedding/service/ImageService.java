@@ -4,7 +4,6 @@ import com.cywedding.common.DMLType;
 import com.cywedding.dto.Image;
 import com.cywedding.dto.QRUser;
 import com.cywedding.mapper.ImageMapper;
-import com.cywedding.mapper.VoteMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,6 @@ public class ImageService {
     QRUserService userService;
 
     private final ImageMapper imageMapper;
-    private final VoteMapper voteMapper;
 
     public void uploadImage(String code, String fileName, byte[] file) {
         Image image = new Image();
