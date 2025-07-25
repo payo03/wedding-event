@@ -1,4 +1,4 @@
-package com.cywedding.controller2;
+package com.cywedding.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

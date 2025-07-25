@@ -1,4 +1,4 @@
-package com.cywedding.controller2;
+package com.cywedding.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
