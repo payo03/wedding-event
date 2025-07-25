@@ -1,5 +1,7 @@
 package com.cywedding.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class APIController {
+    private static final Logger logger = LoggerFactory.getLogger(APIController.class);
 
     private final QRUserService userService;
     private final ImageService imageService;
@@ -206,6 +209,34 @@ public class APIController {
 
             returnMap.put("success", false);
             returnMap.put("message", message);
+
+            return ResponseEntity.internalServerError().body(returnMap);
+        }
+    }
+
+    @PostMapping("/image/email")
+    public ResponseEntity<?> sendEmail(@RequestBody Map<String, String> infoMap) {
+        Map<String, Object> returnMap = new HashMap<>();
+
+        String emailAddress = infoMap.get("emailAddress");
+        String plan = infoMap.get("plan");
+        
+        Boolean success = true;
+        String message = "✅ 이메일 전송 완료! ✅";
+        try {
+            imageService.sendEmail(emailAddress, plan);
+
+            returnMap.put("success", success);
+            returnMap.put("message", message);
+
+            return ResponseEntity.ok(returnMap);
+        } catch (Exception e) {
+            logger.info("==================================================");
+            logger.info("이메일 전송 중 오류 발생 : {}", e.getMessage());
+            logger.info("==================================================");
+
+            returnMap.put("success", false);
+            returnMap.put("message", "❌ 이메일 전송 중 오류 발생 ❌: " + e.getMessage());
 
             return ResponseEntity.internalServerError().body(returnMap);
         }
