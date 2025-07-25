@@ -32,6 +32,21 @@
             </set>
             WHERE qr_code = #{user.qrCode}
         </foreach>
-    </update>    
+    </update>
+
+    <!-- DELETE -->
+    <delete id="resetUserList">
+        DELETE FROM qr_user
+        WHERE is_admin = false
+    </delete>
+
+    <!-- INSERT -->
+    <insert id="createUserList" parameterType="java.util.List">
+        INSERT INTO qr_user (qr_code, is_upload, is_vote, is_admin)
+        VALUES
+        <foreach collection="userList" item="user" separator=",">
+            (#{user.qrCode}, #{user.upload}, #{user.vote}, #{user.admin})
+        </foreach>
+    </insert>      
 
 </mapper>

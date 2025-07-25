@@ -1,5 +1,6 @@
 package com.cywedding.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -62,8 +63,26 @@ public class QRUserService {
     }
 
     public void updateUserList(QRUser user) { this.updateUserList(List.of(user)); }
-
     public void updateUserList(List<QRUser> userList) {
         userMapper.updateUserList(userList);
+    }
+
+    public void resetUserList() {
+        userMapper.resetUserList();
+    }
+
+    public void createUserList(String prefix, Integer count) {
+        List<QRUser> userList = new ArrayList<QRUser>();
+        for(Integer i = 1; i <= count; i++) {
+            QRUser user = new QRUser();
+            user.setQrCode(prefix + String.format("%03d", i));
+            user.setUpload(false);
+            user.setVote(false);
+            user.setAdmin(false);
+
+            userList.add(user);
+        }
+        logger.info("생성된 QRUser 목록: {}", userList);
+        userMapper.createUserList(userList);
     }
 }

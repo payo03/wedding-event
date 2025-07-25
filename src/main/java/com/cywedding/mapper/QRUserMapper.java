@@ -13,4 +13,8 @@ public interface QRUserMapper {
     QRUser fetchQRUser(String code);
 
     void updateUserList(@Param("userList") List<QRUser> userList);
+
+    void resetUserList();
+
+    void createUserList(@Param("userList") List<QRUser> userList);
 }

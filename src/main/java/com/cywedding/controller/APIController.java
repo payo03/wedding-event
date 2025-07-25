@@ -35,6 +35,18 @@ public class APIController {
         this.voteService = voteService;
     }
 
+    @PostMapping("/qr/create")
+    public void qrCreate(
+        @RequestHeader("X-QR-CODE") String code,
+        @RequestBody Map<String, String> infoMap
+    ) {
+        String prefix = infoMap.get("prefix");
+        int count = Integer.parseInt(infoMap.get("count"));
+
+        userService.resetUserList();
+        userService.createUserList(prefix, count);
+    }
+
     @GetMapping("/user/check")
     public ResponseEntity<?> checkUser(@RequestHeader("X-QR-CODE") String code) {
         QRUser user = userService.fetchQRUser(code);
