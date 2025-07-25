@@ -34,6 +34,11 @@ public class QRUserService {
         if (user == null) {
             return false;
         }
+        if(user.isAdmin()) {
+            // 관리자는 항상 유효함
+            return true;
+        }
+
         logger.info("==================================================");
         logger.info("{}", user);
         logger.info("==================================================");
@@ -51,11 +56,6 @@ public class QRUserService {
                 break;
             default:
                 break;
-        }
-
-        // 관리자는 항상 유효함
-        if(user.isAdmin()) {
-            isValid = true;
         }
 
         return isValid;

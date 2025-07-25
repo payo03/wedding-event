@@ -35,6 +35,18 @@ public class APIController {
         this.voteService = voteService;
     }
 
+    @GetMapping("/check")
+    public ResponseEntity<?> checkUser(@RequestHeader("X-QR-CODE") String code) {
+        Map<String, Object> returnMap = new HashMap<>();
+
+        Boolean isValid = userService.validDML(code, DMLType.UPLOAD);
+        
+        returnMap.put("success", isValid);
+        returnMap.put("message", isValid ? "✅ 업로드 가능! ✅" : "❌ 업로드한 사진이 존재합니다. ❌");
+
+        return ResponseEntity.ok(returnMap);
+    }
+
     @PostMapping("/upload")
     @SuppressWarnings("null")
     public ResponseEntity<?> uploadImage(
@@ -116,18 +128,12 @@ public class APIController {
             }
 
             byte[] imageData = imageService.selectImage(filename);
-            if (imageData == null) {
-                returnMap.put("success", false);
-                returnMap.put("message", "❌ 해당 파일을 DB에서 찾을 수 없습니다. ❌");
-
-                return ResponseEntity.status(404).body(returnMap);
-            }
-
             return ResponseEntity.ok()
                     .contentType(contentType)
                     .body(imageData);
         } catch (Exception e) {
             e.printStackTrace();
+
             returnMap.put("success", false);
             returnMap.put("message", "❌ 이미지 조회 중 오류 발생 ❌");
 
