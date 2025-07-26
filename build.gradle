@@ -44,7 +44,7 @@ bootJar {
 
 // task buildFrontend(type: Exec) {
 //     workingDir '../front'
-//     commandLine 'npm', 'run', 'build'
+//     commandLine 'npm.cmd', 'run', 'build'
 // }
 
 // task copyFront(type: Copy) {
