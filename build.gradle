@@ -40,7 +40,7 @@ task cleanStaticAssets(type: Delete) {
 
 task buildFrontend(type: Exec) {
     workingDir '../front'
-    commandLine 'npm.cmd', 'run', 'build'
+    commandLine 'npm', 'run', 'build'
 }
 
 task copyFront(type: Copy) {
