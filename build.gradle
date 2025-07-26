@@ -32,35 +32,35 @@ dependencies {
 }
 
 // --- Vue 빌드 및 정적 파일 복사 자동화 ---
-task cleanStaticAssets(type: Delete) {
-    delete fileTree('src/main/resources/static') {
-        include 'assets/**'
-    }
-}
-
-task buildFrontend(type: Exec) {
-    workingDir '../front'
-    commandLine 'npm', 'run', 'build'
-}
-
-task copyFront(type: Copy) {
-    dependsOn buildFrontend, cleanStaticAssets
-
-    from('../front/dist') {
-        include '**/*'
-    }
-    into('src/main/resources/static')
-
-    inputs.dir('../front/dist')
-    outputs.dir('src/main/resources/static')
-}
-
 bootJar {
     archiveFileName = 'app.jar'
 }
 
-bootRun.dependsOn copyFront, bootJar
-processResources.dependsOn copyFront
+// task cleanStaticAssets(type: Delete) {
+//     delete fileTree('src/main/resources/static') {
+//         include 'assets/**'
+//     }
+// }
+
+// task buildFrontend(type: Exec) {
+//     workingDir '../front'
+//     commandLine 'npm', 'run', 'build'
+// }
+
+// task copyFront(type: Copy) {
+//     dependsOn buildFrontend, cleanStaticAssets
+
+//     from('../front/dist') {
+//         include '**/*'
+//     }
+//     into('src/main/resources/static')
+
+//     inputs.dir('../front/dist')
+//     outputs.dir('src/main/resources/static')
+// }
+
+// bootRun.dependsOn copyFront, bootJar
+// processResources.dependsOn copyFront
 
 tasks.named('test') {
 	useJUnitPlatform()
