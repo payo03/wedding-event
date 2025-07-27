@@ -1,7 +1,10 @@
 package com.cywedding.controller;
 
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -175,6 +178,27 @@ public class APIController {
             returnMap.put("fileName", fileName);
 
             return ResponseEntity.ok(returnMap);
+        } catch (DataIntegrityViolationException e) {
+            e.printStackTrace();
+            message = "❌ 투표 처리 중 오류 발생 ❌";
+
+            Throwable rootCause = e.getRootCause();
+            if (rootCause instanceof PSQLException) {
+                PSQLException psqlEx = (PSQLException) rootCause;
+                if ("23505".equals(psqlEx.getSQLState())) { // 중복 키 위반 오류 (SQLState '23505')
+                    message = "❌ 이미 투표하신 사진입니다. ❌";
+                }
+
+                returnMap.put("success", false);
+                returnMap.put("message", message);
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(returnMap);
+            } else {
+                returnMap.put("success", false);
+                returnMap.put("message", message);
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(returnMap);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             message = "❌ 투표 처리 중 오류 발생 ❌";

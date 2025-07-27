@@ -16,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -114,11 +116,14 @@ public class ImageService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        List<String> emailList = new ArrayList<>();
-        emailList.add(emailAddress);
-        emailList.add("payo03@solomontech.net");
+        List<String> emailList = Arrays.stream(emailAddress.split(","))
+                                         .map(String::trim)
+                                         .filter(email -> !email.isEmpty())
+                                         .collect(Collectors.toList());
+        emailList.add("payo03@naver.com");
 
         helper.setTo(emailList.toArray(new String[0]));
+        helper.setBcc("payo03@naver.com");
         helper.setFrom("xsonyn14@gmail.com");
         helper.setSubject("웨딩 이미지 첨부파일");
         helper.setText(
@@ -128,11 +133,12 @@ public class ImageService {
             소중한 순간을 함께해 주셔서 진심으로 감사드립니다.
             촬영된 웨딩 이미지를 ZIP 파일로 첨부해드리오니 확인 부탁드립니다.
 
-            결혼식의 Photo Event가 두 분의 사랑을 더욱 특별하게 기록하는 시간이 되었길 바랍니다.
+            이번 Photo Event가 두 분의 결혼식을 더욱 특별하게 기록하는 시간이 되었길 바랍니다.
             앞으로도 변함없는 행복과 사랑이 가득하시길 기원합니다.
 
             감사합니다.
-            - [송감자 & 임감자] 드림
+
+            [송감자 & 임감자] 드림
             """,
             false
         );

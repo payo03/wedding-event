@@ -15,7 +15,7 @@
           GROUP BY file_name
         ) v ON i.file_name = v.file_name
         ORDER BY count DESC
-        <if test="plan == 'eco'">
+        <if test="plan == 'ECO'">
             LIMIT 10
         </if>
     </select>

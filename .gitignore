@@ -35,7 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
-.gradle/
 
 ### git update-index --no-assume-unchanged build.gradle
 ### git update-index --no-assume-unchanged src/main/resources/application.properties
