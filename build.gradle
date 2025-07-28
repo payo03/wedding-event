@@ -23,6 +23,7 @@ dependencies {
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation 'org.postgresql:postgresql'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'com.cloudinary:cloudinary-http44:1.37.0'
 	
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -32,9 +33,9 @@ dependencies {
 }
 
 // --- Vue 빌드 및 정적 파일 복사 자동화 ---
-bootJar {
-    archiveFileName = 'app.jar'
-}
+// bootJar {
+//     archiveFileName = 'app.jar'
+// }
 
 // task cleanStaticAssets(type: Delete) {
 //     delete fileTree('src/main/resources/static') {
