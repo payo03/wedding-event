@@ -7,7 +7,7 @@ public class Image {
     // FIELD
     private String fileName;
     private String qrCode;
-    private byte[] file;
+    private String imageUrl;
 
     // CUSTOM
     private int count;

@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cywedding.common.DMLType;
+import com.cywedding.service.CloudinaryService;
 import com.cywedding.service.ImageService;
 import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
@@ -18,9 +18,6 @@ import com.cywedding.dto.QRUser;
 import com.cywedding.dto.Image;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -35,11 +32,13 @@ public class APIController {
     private final QRUserService userService;
     private final ImageService imageService;
     private final VoteService voteService;
+    private final CloudinaryService cloudinaryService;
 
-    public APIController(QRUserService userService, ImageService imageService, VoteService voteService) {
+    public APIController(QRUserService userService, ImageService imageService, VoteService voteService, CloudinaryService cloudinaryService) {
         this.userService = userService;
         this.imageService = imageService;
         this.voteService = voteService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @PostMapping("/qr/create")
@@ -89,7 +88,8 @@ public class APIController {
             String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HHmmss"));
             String fileName = code + "_" + timeStamp + extension;
 
-            imageService.uploadImage(code, fileName, file.getBytes());
+            String url = cloudinaryService.uploadImage(file);
+            imageService.uploadImage(code, fileName, url);
 
             // 성공 응답
             returnMap.put("success", true);

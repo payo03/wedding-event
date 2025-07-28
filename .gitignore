@@ -36,5 +36,10 @@ out/
 ### VS Code ###
 .vscode/
 
+# 비활성화
+### git update-index --assume-unchanged build.gradle
+### git update-index --assume-unchanged src/main/resources/application.properties
+
+# 활성화
 ### git update-index --no-assume-unchanged build.gradle
 ### git update-index --no-assume-unchanged src/main/resources/application.properties

@@ -15,8 +15,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -38,11 +39,11 @@ public class ImageService {
 
     private final ImageMapper imageMapper;
 
-    public void uploadImage(String code, String fileName, byte[] file) {
+    public void uploadImage(String code, String fileName, String url) {
         Image image = new Image();
         image.setQrCode(code);
         image.setFileName(fileName);
-        image.setFile(file);
+        image.setImageUrl(url);
 
         imageMapper.uploadImage(image);
 
@@ -54,18 +55,7 @@ public class ImageService {
     }
 
     public List<Image> selectImageList() {
-        List<Image> imageList = imageMapper.selectImageList("premium").stream().map(img -> {
-            Image imageView = new Image();
-            
-            imageView.setFileName(img.getFileName());
-            imageView.setCount(img.getCount());
-            imageView.setBase64File(Base64.getEncoder().encodeToString(img.getFile()));
-
-            return imageView;
-        })
-        .collect(Collectors.toList());
-
-        return imageList;
+        return imageMapper.selectImageList("premium");
     }
 
     // 관리자 전용
@@ -97,13 +87,21 @@ public class ImageService {
 
         for (Image image : imageList) {
             String fileName = image.getFileName();
-            byte[] fileBytes = image.getFile();
+            String imageUrl = image.getImageUrl();
 
-            if (fileBytes != null) {
-                ZipEntry entry = new ZipEntry(fileName);
-                zip.putNextEntry(entry);
-                zip.write(fileBytes);
-                zip.closeEntry();
+            if (imageUrl != null) {
+                try {
+                    URI uri = URI.create(imageUrl);
+                    try (InputStream inputStream = uri.toURL().openStream()) {
+                        ZipEntry entry = new ZipEntry(fileName);
+
+                        zip.putNextEntry(entry);
+                        inputStream.transferTo(zip);
+                        zip.closeEntry();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         zip.close();
@@ -117,7 +115,6 @@ public class ImageService {
                                          .map(String::trim)
                                          .filter(email -> !email.isEmpty())
                                          .collect(Collectors.toList());
-        emailList.add("payo03@naver.com");
 
         helper.setTo(emailList.toArray(new String[0]));
         helper.setBcc("payo03@naver.com");

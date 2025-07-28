@@ -7,7 +7,7 @@
         SELECT
             i.qr_code,
             i.file_name,
-            i.file,
+            i.image_url,
             COALESCE(v.count, 0) AS count
         FROM image i
         LEFT JOIN (
@@ -22,15 +22,15 @@
     </select>
 
     <select id="selectImage" parameterType="string" resultType="com.cywedding.dto.Image">
-        SELECT qr_code, file
+        SELECT qr_code, image_url
         FROM image
         WHERE file_name = #{fileName}
     </select>
 
     <!-- INSERT -->
     <insert id="uploadImage" parameterType="com.cywedding.dto.Image">
-        INSERT INTO image (qr_code, file_name, file)
-        VALUES (#{qrCode}, #{fileName}, #{file})
+        INSERT INTO image (qr_code, file_name, image_url)
+        VALUES (#{qrCode}, #{fileName}, #{imageUrl})
     </insert>
 
     <!-- DELETE -->
