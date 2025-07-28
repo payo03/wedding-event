@@ -11,4 +11,5 @@ public class Image {
 
     // CUSTOM
     private int count;
+    private String base64File;
 }

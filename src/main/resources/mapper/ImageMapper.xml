@@ -3,16 +3,17 @@
 <mapper namespace="com.cywedding.mapper.ImageMapper">
 
     <!-- SELECT -->
-    <select id="selectImageList" parameterType="string" resultType="map">
+    <select id="selectImageList" parameterType="string" resultType="com.cywedding.dto.Image">
         SELECT
-            i.file_name AS name,
-            '/api/image/files/' || i.file_name AS url,
+            i.qr_code,
+            i.file_name,
+            i.file,
             COALESCE(v.count, 0) AS count
         FROM image i
         LEFT JOIN (
-          SELECT file_name, COUNT(*) AS count
-          FROM vote
-          GROUP BY file_name
+            SELECT file_name, COUNT(*) AS count
+            FROM vote
+            GROUP BY file_name
         ) v ON i.file_name = v.file_name
         ORDER BY count DESC
         <if test="plan == 'ECO'">
@@ -20,8 +21,8 @@
         </if>
     </select>
 
-    <select id="selectImage" parameterType="string" resultType="map">
-        SELECT qr_code as code, file
+    <select id="selectImage" parameterType="string" resultType="com.cywedding.dto.Image">
+        SELECT qr_code, file
         FROM image
         WHERE file_name = #{fileName}
     </select>

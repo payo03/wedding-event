@@ -15,6 +15,7 @@ import com.cywedding.service.ImageService;
 import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
 import com.cywedding.dto.QRUser;
+import com.cywedding.dto.Image;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -112,7 +113,7 @@ public class APIController {
 
         QRUser user = userService.fetchQRUser(code);
         try {
-            List<Map<String, Object>> imageList = imageService.selectImageList();
+            List<Image> imageList = imageService.selectImageList();
 
             returnMap.put("success", true);
             returnMap.put("images", imageList);
@@ -120,35 +121,12 @@ public class APIController {
 
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
+            logger.info("==================================================");
+            logger.info("error : {}", e.getMessage());
+            logger.info("==================================================");
+
             returnMap.put("success", false);
             returnMap.put("message", "❌ 이미지 목록 조회 중 오류 발생 ❌");
-
-            return ResponseEntity.internalServerError().body(returnMap);
-        }
-    }
-
-    @GetMapping("/image/files/{filename:.+}")
-    public ResponseEntity<?> getImageFile(@PathVariable String filename) throws Exception {
-        Map<String, Object> returnMap = new HashMap<>();
-
-        try {
-            Path path = Paths.get(filename);
-            String mimeType = Files.probeContentType(path);
-            MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
-
-            if (mimeType != null) {
-                contentType = MediaType.parseMediaType(mimeType);
-            }
-
-            byte[] imageData = imageService.selectImage(filename);
-            return ResponseEntity.ok()
-                    .contentType(contentType)
-                    .body(imageData);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            returnMap.put("success", false);
-            returnMap.put("message", "❌ 이미지 조회 중 오류 발생 ❌");
 
             return ResponseEntity.internalServerError().body(returnMap);
         }

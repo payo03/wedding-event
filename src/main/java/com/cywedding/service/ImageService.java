@@ -15,10 +15,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -54,36 +53,35 @@ public class ImageService {
         userService.updateUserList(user);
     }
 
-    public List<Map<String, Object>> selectImageList() {
-        return imageMapper.selectImageList("premium");
-    }
+    public List<Image> selectImageList() {
+        List<Image> imageList = imageMapper.selectImageList("premium").stream().map(img -> {
+            Image imageView = new Image();
+            
+            imageView.setFileName(img.getFileName());
+            imageView.setCount(img.getCount());
+            imageView.setBase64File(Base64.getEncoder().encodeToString(img.getFile()));
 
-    public byte[] selectImage(String fileName) {
-        Map<String, Object> imageObj = fetchImage(fileName);
+            return imageView;
+        })
+        .collect(Collectors.toList());
 
-        Object fileObj = imageObj.get("file");
-        if (fileObj instanceof byte[] bytes) {
-            return bytes;
-        } else {
-            throw new IllegalArgumentException("파일형식 오류: " + fileObj);
-        }
+        return imageList;
     }
 
     // 관리자 전용
     public void deleteImage(String code, String fileName) {
-        Map<String, Object> imageObj = fetchImage(fileName);
-        System.out.println(imageObj);
+        Image image = fetchImage(fileName);
 
         QRUser user = new QRUser();
-        user.setQrCode(String.valueOf(imageObj.get("code")));
+        user.setQrCode(image.getQrCode());
         user.setType(DMLType.DELETE.name());
 
         userService.updateUserList(user);
         imageMapper.deleteImage(fileName);
     }
 
-    public Map<String, Object> fetchImage(String fileName) {
-        Map<String, Object> image = imageMapper.selectImage(fileName);
+    public Image fetchImage(String fileName) {
+        Image image = imageMapper.selectImage(fileName);
         if (image == null) {
             throw new IllegalArgumentException("이미지가 존재하지 않습니다: " + fileName);
         }
@@ -92,15 +90,14 @@ public class ImageService {
 
     @Async
     public void sendEmail(String emailAddress, String plan) throws MessagingException, IOException {
-        List<Map<String, Object>> imageList = imageMapper.selectImageList(plan);
+        List<Image> imageList = imageMapper.selectImageList(plan);
 
         ByteArrayOutputStream zipOutStream = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(zipOutStream);
 
-        for (Map<String, Object> image : imageList) {
-            String fileName = (String) image.get("name");
-            Map<String, Object> imageData = imageMapper.selectImage(fileName);
-            byte[] fileBytes = (byte[]) imageData.get("file");
+        for (Image image : imageList) {
+            String fileName = image.getFileName();
+            byte[] fileBytes = image.getFile();
 
             if (fileBytes != null) {
                 ZipEntry entry = new ZipEntry(fileName);
