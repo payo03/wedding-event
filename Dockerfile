@@ -20,5 +20,5 @@ WORKDIR /app
 # 보통 build/libs/ 에 JAR 파일이 생성됩니다.
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 10000
 ENTRYPOINT ["java", "-jar", "app.jar"]
