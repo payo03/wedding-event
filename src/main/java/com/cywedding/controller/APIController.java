@@ -98,7 +98,9 @@ public class APIController {
 
             return ResponseEntity.ok(returnMap);
         } catch (IOException e) {
+            logger.info("==================================================");
             e.printStackTrace();
+            logger.info("==================================================");
 
             returnMap.put("success", false);
             returnMap.put("message", "❌ 파일 저장 중 오류 발생 ❌");
@@ -122,7 +124,7 @@ public class APIController {
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
             logger.info("==================================================");
-            logger.info("error : {}", e.getMessage());
+            e.printStackTrace();
             logger.info("==================================================");
 
             returnMap.put("success", false);
@@ -157,7 +159,10 @@ public class APIController {
 
             return ResponseEntity.ok(returnMap);
         } catch (DataIntegrityViolationException e) {
+            logger.info("==================================================");
             e.printStackTrace();
+            logger.info("==================================================");
+
             message = "❌ 투표 처리 중 오류 발생 ❌";
 
             Throwable rootCause = e.getRootCause();
@@ -178,7 +183,10 @@ public class APIController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(returnMap);
             }
         } catch (Exception e) {
+            logger.info("==================================================");
             e.printStackTrace();
+            logger.info("==================================================");
+
             message = "❌ 투표 처리 중 오류 발생 ❌";
 
             returnMap.put("success", false);
@@ -206,7 +214,10 @@ public class APIController {
 
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
+            logger.info("==================================================");
             e.printStackTrace();
+            logger.info("==================================================");
+
             message = "❌ 삭제 처리 중 오류 발생 ❌";
 
             returnMap.put("success", false);
@@ -234,7 +245,7 @@ public class APIController {
             return ResponseEntity.ok(returnMap);
         } catch (Exception e) {
             logger.info("==================================================");
-            logger.info("이메일 전송 중 오류 발생 : {}", e.getMessage());
+            e.printStackTrace();
             logger.info("==================================================");
 
             returnMap.put("success", false);
