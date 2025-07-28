@@ -7,7 +7,6 @@ FROM gradle:8.4-jdk21 AS builder
 WORKDIR /app
 
 # 현재 디렉토리 (back 프로젝트의 루트)의 모든 파일을 컨테이너의 /app으로 복사
-# Render 배포 시 이 Dockerfile이 back 폴더 내에 있다고 가정하고 빌드합니다.
 COPY . .
 
 # 백엔드 프로젝트 빌드 (테스트는 제외)
@@ -21,5 +20,5 @@ WORKDIR /app
 # 보통 build/libs/ 에 JAR 파일이 생성됩니다.
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-EXPOSE 10000
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
