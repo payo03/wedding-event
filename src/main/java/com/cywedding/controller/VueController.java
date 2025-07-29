@@ -16,13 +16,13 @@ public class VueController {
         return "forward:/index.html";
     }
     
-    @GetMapping("/qr/{domain}/{qrcode}")
+    @GetMapping("/qr/{groupName}/{qrCode}")
     public String qrLogin(
-        @PathVariable String domain,
-        @PathVariable String qrcode
+        @PathVariable String groupName,
+        @PathVariable String qrCode
     ) {
         logger.info("==================================================");
-        logger.info("Domain : {}, QR Code : {}", domain, qrcode);
+        logger.info("Domain : {}, QR Code : {}", groupName, qrCode);
         logger.info("==================================================");
 
         return "forward:/index.html";

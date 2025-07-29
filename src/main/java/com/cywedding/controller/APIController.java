@@ -18,11 +18,9 @@ import com.cywedding.service.QRGroupService;
 import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
 import com.cywedding.dto.QRUser;
-import com.cywedding.dto.Image;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,17 +38,17 @@ public class APIController {
     private UploadLimitConfig limitConfig;
 
     public APIController(
-        QRGroupService groupService, 
-        QRUserService userService, 
-        ImageService imageService, 
-        VoteService voteService, 
-        CloudinaryService cloudinaryService
+            QRGroupService groupService, 
+            QRUserService userService, 
+            ImageService imageService, 
+            VoteService voteService, 
+            CloudinaryService cloudinaryService
     ) {
-        this.groupService = groupService;
-        this.userService = userService;
-        this.imageService = imageService;
-        this.voteService = voteService;
-        this.cloudinaryService = cloudinaryService;
+            this.groupService = groupService;
+            this.userService = userService;
+            this.imageService = imageService;
+            this.voteService = voteService;
+            this.cloudinaryService = cloudinaryService;
     }
 
     /**
@@ -75,10 +73,10 @@ public class APIController {
      */
     @GetMapping("/user/check")
     public ResponseEntity<?> checkUser(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestHeader("X-QR-CODE") String code
     ) {
-        QRUser user = userService.fetchQRUser(domain, code);
+        QRUser user = userService.fetchQRUser(groupName, code);
         
         return ResponseEntity.ok(user);
     }
@@ -91,14 +89,14 @@ public class APIController {
      */
     @PostMapping("/image/upload")
     public ResponseEntity<?> uploadImage(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestHeader("X-QR-CODE") String code,
             @RequestParam MultipartFile file
         ) {
         Map<String, Object> returnMap = new HashMap<>();
 
         // 1. 기 업로드 요청자일경우
-        Boolean isValid = userService.validDML(domain, code, DMLType.UPLOAD);
+        Boolean isValid = userService.validDML(groupName, code, DMLType.UPLOAD);
         if (!isValid) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
@@ -125,7 +123,7 @@ public class APIController {
         try {
             byte[] fileBytes = file.getBytes();
             String fileName = file.getOriginalFilename();
-            cloudinaryService.asyncUploadImage(domain, code, fileName, fileBytes);
+            cloudinaryService.asyncUploadImage(groupName, code, fileName, fileBytes);
 
             // 성공 응답
             returnMap.put("success", true);
@@ -151,18 +149,16 @@ public class APIController {
      */
     @GetMapping("/image/list")
     public ResponseEntity<?> getImageList(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestHeader("X-QR-CODE") String code
     ) {
         Map<String, Object> returnMap = new HashMap<>();
 
-        QRUser user = userService.fetchQRUser(domain, code);
+        QRUser user = userService.fetchQRUser(groupName, code);
         String plan = "premium"; // default
         try {
-            List<Image> imageList = imageService.selectImageList(user, plan);
-
             returnMap.put("success", true);
-            returnMap.put("images", imageList);
+            returnMap.put("images", imageService.selectImageList(user, plan));
             returnMap.put("user", user);
 
             return ResponseEntity.ok(returnMap);
@@ -186,7 +182,7 @@ public class APIController {
      */
     @PostMapping("/image/vote")
     public ResponseEntity<?> voteImage(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
     ) {
@@ -196,13 +192,13 @@ public class APIController {
 
         String message = "✅ 투표 완료! ✅";
         try {
-            Boolean isValid = userService.validDML(domain, code, DMLType.VOTE);
+            Boolean isValid = userService.validDML(groupName, code, DMLType.VOTE);
             if(!isValid) {
-                voteService.deleteVote(domain, code, fileName);
+                voteService.deleteVote(groupName, code, fileName);
                 message = "♻️ 재투표 완료! ♻️";
             }
             
-            voteService.voteImage(domain, code, fileName);
+            voteService.voteImage(groupName, code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", message);
@@ -249,7 +245,7 @@ public class APIController {
 
     @PostMapping("/image/delete")
     public ResponseEntity<?> deleteImage(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
     ) {
@@ -259,7 +255,7 @@ public class APIController {
 
         String message = "✅ 삭제 완료! ✅";
         try {
-            imageService.deleteImage(domain, code, fileName);
+            imageService.deleteImage(groupName, code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", message);
@@ -281,7 +277,7 @@ public class APIController {
 
     @PostMapping("/image/email")
     public ResponseEntity<?> sendEmail(
-            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-DOMAIN") String groupName,
             @RequestBody Map<String, String> infoMap
     ) {
         Map<String, Object> returnMap = new HashMap<>();
@@ -292,7 +288,7 @@ public class APIController {
         Boolean success = true;
         String message = "✅ 이메일 전송 완료! ✅";
         try {
-            imageService.sendEmail(domain, plan, emailAddress);
+            imageService.sendEmail(groupName, plan, emailAddress);
 
             returnMap.put("success", success);
             returnMap.put("message", message);

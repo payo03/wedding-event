@@ -22,18 +22,18 @@ public class HealthCheckController {
 
     @GetMapping("/healthcheck")
     public Map<String, Object> healthCheck(
-            @RequestParam(required = false) String domain,
-            @RequestParam(required = false) String code
+            @RequestParam(required = false) String groupName,
+            @RequestParam(required = false) String qrCode
     ) {
         Map<String, Object> result = new LinkedHashMap<>();
-        
+
         result.put("status", "SERVER IS RUNNING");
         result.put("timestamp", LocalDateTime.now().format(FORMATTER));
 
-        if (domain != null && code != null) {
+        if (groupName != null && qrCode != null) {
             QRUser param = new QRUser();
-            param.setGroupName(domain);
-            param.setQrCode(code);
+            param.setGroupName(groupName);
+            param.setQrCode(qrCode);
 
             QRUser user = userMapper.fetchQRUser(param);
             if (user != null) {
