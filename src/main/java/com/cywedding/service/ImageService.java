@@ -104,19 +104,17 @@ public class ImageService {
             String fileName = image.getFileName();
             String imageUrl = image.getImageUrl();
 
-            if (imageUrl != null) {
-                try {
-                    URI uri = URI.create(imageUrl);
-                    try (InputStream inputStream = uri.toURL().openStream()) {
-                        ZipEntry entry = new ZipEntry(fileName);
+            try {
+                URI uri = URI.create(imageUrl);
+                try (InputStream inputStream = uri.toURL().openStream()) {
+                    ZipEntry entry = new ZipEntry(fileName);
 
-                        zip.putNextEntry(entry);
-                        inputStream.transferTo(zip);
-                        zip.closeEntry();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    zip.putNextEntry(entry);
+                    inputStream.transferTo(zip);
+                    zip.closeEntry();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         zip.close();
@@ -136,19 +134,29 @@ public class ImageService {
         helper.setSubject("웨딩 이미지 첨부파일");
         helper.setText(
             """
-            안녕하세요, 고객님.
+            <div style="font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 15px; line-height: 1.6; color: #333;">
+                <p>안녕하세요, 고객님.</p>
+                <p>
+                    소중한 순간을 함께해 주셔서 <strong>진심으로 감사드립니다.</strong><br>
+                    촬영된 <span style="color: #007bff; font-weight: bold;">웨딩 이미지</span>를 ZIP 파일로 첨부해드리오니, 
+                    아래 첨부파일을 확인 부탁드립니다.
+                </p>
+                <p>
+                    이번 <em>Photo Event</em>가 두 분의 결혼식을 더욱 특별하게 기록하는 
+                    시간이 되었기를 바랍니다.
+                </p>
+                <p>
+                    앞으로도 변함없는 <strong style="color: #e83e8c;">🌸 행복과 💑 사랑</strong>이 가득하시길 기원합니다.
+                </p>
+                <p>감사합니다.</p>
 
-            소중한 순간을 함께해 주셔서 진심으로 감사드립니다.
-            촬영된 웨딩 이미지를 ZIP 파일로 첨부해드리오니 확인 부탁드립니다.
-
-            이번 Photo Event가 두 분의 결혼식을 더욱 특별하게 기록하는 시간이 되었길 바랍니다.
-            앞으로도 변함없는 행복과 사랑이 가득하시길 기원합니다.
-
-            감사합니다.
-
-            [송감자 & 임감자] 드림
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                <p style="text-align: right;">
+                    💕 <strong>송감자 & 임감자</strong> 드림
+                </p>
+            </div>
             """,
-            false
+            true
         );
 
         ByteArrayResource zipResource = new ByteArrayResource(zipBytes);
