@@ -19,7 +19,16 @@
         INNER JOIN qr_user qu ON i.qr_code = qu.qr_code
         WHERE qu.group_id = 0 
             OR qu.group_id = #{groupId}
-        ORDER BY count DESC
+        ORDER BY
+        <choose>
+            <when test="qrCode != null">
+                CASE WHEN i.qr_code = #{qrCode} THEN 0 ELSE 1 END,
+                COALESCE(vc.count, 0) DESC
+            </when>
+            <otherwise>
+                COALESCE(vc.count, 0) DESC
+            </otherwise>
+        </choose>
         <if test="plan != null and plan.equals('ECO')">
             LIMIT 10
         </if>

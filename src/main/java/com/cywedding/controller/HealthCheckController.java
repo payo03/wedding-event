@@ -34,7 +34,7 @@ public class HealthCheckController {
             QRUser param = new QRUser();
             param.setGroupName(groupName);
             param.setQrCode(qrCode);
-
+            
             QRUser user = userMapper.fetchQRUser(param);
             if (user != null) {
                 result.put("user", user);
