@@ -49,6 +49,7 @@ public class APIController {
         @RequestHeader("X-QR-CODE") String code,
         @RequestBody Map<String, String> infoMap
     ) {
+        String domain = infoMap.get("domain");
         String prefix = infoMap.get("prefix");
         int count = Integer.parseInt(infoMap.get("count"));
 
