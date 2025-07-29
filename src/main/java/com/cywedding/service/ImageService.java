@@ -32,10 +32,10 @@ import org.springframework.stereotype.Service;
 public class ImageService {
 
     @Autowired
-    QRUserService userService;
+    private QRUserService userService;
 
     @Autowired
-    JavaMailSender mailSender;
+    private JavaMailSender mailSender;
 
     private final ImageMapper imageMapper;
 

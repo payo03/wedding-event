@@ -3,6 +3,7 @@ package com.cywedding.controller;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cywedding.common.DMLType;
+import com.cywedding.config.UploadLimitConfig;
 import com.cywedding.service.CloudinaryService;
 import com.cywedding.service.ImageService;
 import com.cywedding.service.VoteService;
@@ -18,8 +20,6 @@ import com.cywedding.dto.QRUser;
 import com.cywedding.dto.Image;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,9 @@ public class APIController {
     private final ImageService imageService;
     private final VoteService voteService;
     private final CloudinaryService cloudinaryService;
+
+    @Autowired
+    private UploadLimitConfig limitConfig;
 
     public APIController(QRUserService userService, ImageService imageService, VoteService voteService, CloudinaryService cloudinaryService) {
         this.userService = userService;
@@ -61,13 +64,13 @@ public class APIController {
     }
 
     @PostMapping("/image/upload")
-    @SuppressWarnings("null")
     public ResponseEntity<?> uploadImage(
             @RequestHeader("X-QR-CODE") String code,
             @RequestParam("file") MultipartFile file
         ) {
         Map<String, Object> returnMap = new HashMap<>();
 
+        // 1. 기 업로드 요청자일경우
         Boolean isValid = userService.validDML(code, DMLType.UPLOAD);
         if (!isValid) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -76,6 +79,15 @@ public class APIController {
             ));
         }
 
+        // 2. 업로드 요청이 너무 많을 경우
+        if (!limitConfig.tryAcquire()) {
+            return ResponseEntity.status(429).body(Map.of(
+                "success", false,
+                "message", "❌ 업로드 요청이 많아 대기 중입니다. (최대 동시 업로드 인원: " + limitConfig.getLimit() + "명) 잠시 후 다시 시도해 주세요. ❌"
+            ));
+        }
+
+        // 3. 파일이 비어있는 경우
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
@@ -84,17 +96,13 @@ public class APIController {
         }
         
         try {
-            String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HHmmss"));
-            String fileName = code + "_" + timeStamp + extension;
-
-            String url = cloudinaryService.uploadImage(file);
-            imageService.uploadImage(code, fileName, url);
+            byte[] fileBytes = file.getBytes();
+            String fileName = file.getOriginalFilename();
+            cloudinaryService.asyncUploadImage(code, fileName, fileBytes);
 
             // 성공 응답
             returnMap.put("success", true);
-            returnMap.put("message", "✅ 업로드 성공! ✅");
-            returnMap.put("fileName", fileName);
+            returnMap.put("message", "✅ 업로드 요청 완료! ✅");
 
             return ResponseEntity.ok(returnMap);
         } catch (IOException e) {
@@ -103,7 +111,7 @@ public class APIController {
             logger.info("==================================================");
 
             returnMap.put("success", false);
-            returnMap.put("message", "❌ 파일 저장 중 오류 발생 ❌");
+            returnMap.put("message", "❌ 파일 업로드 요청 중 오류 발생 ❌");
 
             return ResponseEntity.internalServerError().body(returnMap);
         }

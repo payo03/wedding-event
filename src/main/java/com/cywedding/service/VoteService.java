@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 public class VoteService {
 
     @Autowired
-    ImageService imageService;
+    private ImageService imageService;
 
     @Autowired
-    QRUserService userService;
+    private QRUserService userService;
 
     private final VoteMapper voteMapper;
 
