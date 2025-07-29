@@ -42,10 +42,10 @@ public class CloudinaryService {
     }
 
     @Async
-    public void asyncUploadImage(String code, String fileName, byte[] fileBytes) throws IOException {
+    public void asyncUploadImage(String domain, String code, String fileName, byte[] fileBytes) throws IOException {
         String extension = fileName.substring(fileName.lastIndexOf("."));
         String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HHmmss"));
-        String name = code + "_" + timeStamp + extension;
+        String name = domain + "-" + code + "_" + timeStamp + extension;
 
         long delay = INITIAL_DELAY;
         Integer attempt = 0;
@@ -54,7 +54,7 @@ public class CloudinaryService {
             while (attempt < MAX_RETRIES) {
                 try {
                     String url = uploadImage(fileBytes);
-                    imageService.uploadImage(code, name, url);
+                    imageService.uploadImage(domain, code, name, url);
 
                     logger.info("[UPLOAD SUCCESS] url={}", url);
                     break;
@@ -65,7 +65,7 @@ public class CloudinaryService {
                         Thread.sleep(delay);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        
+
                         logger.warn("[UPLOAD INTERRUPTED] attempt {}/{}", attempt, MAX_RETRIES);
                         break;
                     }

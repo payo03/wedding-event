@@ -3,14 +3,36 @@
 <mapper namespace="com.cywedding.mapper.QRUserMapper">
 
     <!-- SELECT -->
-    <select id="fetchQRUser" parameterType="string" resultType="com.cywedding.dto.QRUser">
+    <select id="fetchQRUser" parameterType="com.cywedding.dto.QRUser" resultType="com.cywedding.dto.QRUser">
         SELECT
             qr_code,
+            qu.group_id,
             is_upload,
             is_vote,
+            is_domain_admin,
             is_admin
-        FROM qr_user 
-        WHERE qr_code = #{code}
+        FROM qr_user qu
+        INNER JOIN qr_group qg ON qu.group_id = qg.group_id
+        WHERE qr_code = #{qrCode}
+        AND qg.group_name = #{groupName}
+    </select>
+
+    <select id="fetchQRUserAdmin" parameterType="com.cywedding.dto.QRUser" resultType="com.cywedding.dto.QRUser">
+        SELECT
+            qu.qr_code,
+            (
+                SELECT group_id
+                FROM qr_group
+                WHERE group_name = #{groupName}
+            ) AS group_id,
+            qu.is_upload,
+            qu.is_vote,
+            qu.is_domain_admin,
+            qu.is_admin
+        FROM qr_user qu
+        INNER JOIN qr_group qg ON qu.group_id = qg.group_id
+        WHERE qu.qr_code = #{qrCode}
+        AND qg.group_name = 'admin'
     </select>
 
     <!-- UPDATE -->
@@ -30,23 +52,26 @@
                     </when>
                 </choose>
             </set>
-            WHERE qr_code = #{user.qrCode}
+            FROM qr_group
+            WHERE qr_user.group_id = qr_group.group_id
+                AND qr_user.qr_code = #{user.qrCode}
+                AND qr_group.group_name = #{user.groupName}
         </foreach>
     </update>
 
     <!-- DELETE -->
-    <delete id="resetUserList">
+    <delete id="resetUserList" parameterType="int">
         DELETE FROM qr_user
-        WHERE is_admin = false
+        WHERE group_id = #{groupId}
     </delete>
 
     <!-- INSERT -->
     <insert id="createUserList" parameterType="java.util.List">
-        INSERT INTO qr_user (qr_code, is_upload, is_vote, is_admin)
+        INSERT INTO qr_user (qr_code, group_id)
         VALUES
         <foreach collection="userList" item="user" separator=",">
-            (#{user.qrCode}, #{user.upload}, #{user.vote}, #{user.admin})
+            (#{user.qrCode}, #{user.groupId})
         </foreach>
-    </insert>      
+    </insert>
 
 </mapper>

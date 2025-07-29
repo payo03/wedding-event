@@ -10,6 +10,9 @@ public class Image {
     private String imageUrl;
 
     // CUSTOM
-    private int count;
+    private Integer groupId;
+
+    private Integer count;
     private String base64File;
+    private String plan;
 }

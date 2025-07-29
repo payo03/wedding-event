@@ -9,4 +9,5 @@ public class Vote {
     private String qrCode;
 
     // CUSTOM
+    private String groupName;
 }

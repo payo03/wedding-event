@@ -22,7 +22,7 @@ public class VoteService {
 
     private final VoteMapper voteMapper;
 
-    public void voteImage(String code, String fileName) {
+    public void voteImage(String domain, String code, String fileName) {
         imageService.fetchImage(fileName);
 
         Vote vote = new Vote();
@@ -31,15 +31,17 @@ public class VoteService {
         voteMapper.insertVote(vote);
 
         QRUser user = new QRUser();
+        user.setGroupName(domain);
         user.setQrCode(code);
         user.setType(DMLType.VOTE.name());
         userService.updateUserList(user);
     }
 
-    public void deleteVote(String code, String fileName) {
+    public void deleteVote(String domain, String code, String fileName) {
         imageService.fetchImage(fileName);
 
         Vote vote = new Vote();
+        vote.setGroupName(domain);
         vote.setQrCode(code);
         voteMapper.deleteVote(vote);
     }

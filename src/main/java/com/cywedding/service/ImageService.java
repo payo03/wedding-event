@@ -8,8 +8,10 @@ import org.springframework.scheduling.annotation.Async;
 
 import com.cywedding.common.DMLType;
 import com.cywedding.dto.Image;
+import com.cywedding.dto.QRGroup;
 import com.cywedding.dto.QRUser;
 import com.cywedding.mapper.ImageMapper;
+import com.cywedding.mapper.QRGroupMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,8 +40,9 @@ public class ImageService {
     private JavaMailSender mailSender;
 
     private final ImageMapper imageMapper;
+    private final QRGroupMapper groupMapper;
 
-    public void uploadImage(String code, String fileName, String url) {
+    public void uploadImage(String domain, String code, String fileName, String url) {
         Image image = new Image();
         image.setQrCode(code);
         image.setFileName(fileName);
@@ -47,22 +50,29 @@ public class ImageService {
 
         imageMapper.uploadImage(image);
 
-        // QRUser 객체 생성해서 업데이트
         QRUser user = new QRUser();
+        user.setGroupName(domain);
         user.setQrCode(image.getQrCode());
-        user.setType(DMLType.UPLOAD.name()); // String으로 설정
+        user.setType(DMLType.UPLOAD.name());
+
         userService.updateUserList(user);
     }
 
-    public List<Image> selectImageList() {
-        return imageMapper.selectImageList("premium");
+    public List<Image> selectImageList(QRUser user, String plan) {
+        Image image = new Image();
+        image.setGroupId(user.getGroupId());
+        image.setQrCode(user.getQrCode());
+        image.setPlan(plan);
+
+        return imageMapper.selectImageList(image);
     }
 
     // 관리자 전용
-    public void deleteImage(String code, String fileName) {
+    public void deleteImage(String domain, String code, String fileName) {
         Image image = fetchImage(fileName);
 
         QRUser user = new QRUser();
+        user.setGroupName(domain);
         user.setQrCode(image.getQrCode());
         user.setType(DMLType.DELETE.name());
 
@@ -79,8 +89,13 @@ public class ImageService {
     }
 
     @Async
-    public void sendEmail(String emailAddress, String plan) throws MessagingException, IOException {
-        List<Image> imageList = imageMapper.selectImageList(plan);
+    public void sendEmail(String domain, String plan, String emailAddress) throws MessagingException, IOException {
+        QRGroup group = groupMapper.fetchQRGroup(domain);
+
+        Image param = new Image();
+        param.setGroupId(group.getGroupId());
+        param.setPlan(plan);
+        List<Image> imageList = imageMapper.selectImageList(param);
 
         ByteArrayOutputStream zipOutStream = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(zipOutStream);
@@ -117,7 +132,6 @@ public class ImageService {
                                          .collect(Collectors.toList());
 
         helper.setTo(emailList.toArray(new String[0]));
-        helper.setBcc("payo03@naver.com");
         helper.setFrom("xsonyn14@gmail.com");
         helper.setSubject("웨딩 이미지 첨부파일");
         helper.setText(

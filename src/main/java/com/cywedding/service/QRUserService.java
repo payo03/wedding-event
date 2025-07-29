@@ -1,6 +1,5 @@
 package com.cywedding.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,22 +19,30 @@ public class QRUserService {
 
     private final QRUserMapper userMapper;
 
-    public QRUser fetchQRUser(String code) {
+    public QRUser fetchQRUser(String domain, String code) {
         logger.info("==================================================");
-        logger.info("QR CODE : [{}]", code);
+        logger.info("Domain : [{}], QR CODE : [{}]", domain, code);
         logger.info("==================================================");
 
-        return userMapper.fetchQRUser(code);
+        QRUser param = new QRUser();
+        param.setGroupName(domain);
+        param.setQrCode(code);
+
+        QRUser user = userMapper.fetchQRUser(param);
+        if (user == null) {
+            user = userMapper.fetchQRUserAdmin(param);
+        }
+        return user;
     }
 
-    public Boolean validDML(String code, DMLType type) {
+    public Boolean validDML(String domain, String code, DMLType type) {
         Boolean isValid = true;
 
-        QRUser user = fetchQRUser(code);
+        QRUser user = fetchQRUser(domain, code);
         if (user == null) {
             return false;
         }
-        if(user.isAdmin()) {
+        if(user.isAdmin() || user.isDomainAdmin()) {
             // 관리자는 항상 유효함
             return true;
         }
@@ -65,24 +72,5 @@ public class QRUserService {
     public void updateUserList(QRUser user) { this.updateUserList(List.of(user)); }
     public void updateUserList(List<QRUser> userList) {
         userMapper.updateUserList(userList);
-    }
-
-    public void resetUserList() {
-        userMapper.resetUserList();
-    }
-
-    public void createUserList(String prefix, Integer count) {
-        List<QRUser> userList = new ArrayList<QRUser>();
-        for(Integer i = 1; i <= count; i++) {
-            QRUser user = new QRUser();
-            user.setQrCode(prefix + String.format("%03d", i));
-            user.setUpload(false);
-            user.setVote(false);
-            user.setAdmin(false);
-
-            userList.add(user);
-        }
-        logger.info("생성된 QRUser 목록: {}", userList);
-        userMapper.createUserList(userList);
     }
 }

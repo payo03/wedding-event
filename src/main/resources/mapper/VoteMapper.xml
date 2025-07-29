@@ -19,8 +19,11 @@
 
     <!-- DELETE VOTE -->
     <delete id="deleteVote" parameterType="com.cywedding.dto.Vote">
-        DELETE FROM vote
-        WHERE qr_code = #{qrCode}
+        DELETE FROM vote v
+        USING qr_user qu, qr_group qg
+        WHERE v.qr_code = qu.qr_code AND qu.group_id = qg.group_id
+            AND v.qr_code = #{qrCode}
+            AND qg.group_name = #{groupName}
     </delete>
 
 </mapper>

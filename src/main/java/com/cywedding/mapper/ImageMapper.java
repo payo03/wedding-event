@@ -10,10 +10,10 @@ import com.cywedding.dto.Image;
 @Mapper
 public interface ImageMapper {
 
-    List<Image> selectImageList(@Param("plan") String plan);
-    Image selectImage(String fileName);
+    List<Image> selectImageList(Image image);
+    Image selectImage(@Param("fileName") String fileName);
 
     void uploadImage(Image image);
     
-    void deleteImage(String fileName);
+    void deleteImage(@Param("fileName") String fileName);
 }

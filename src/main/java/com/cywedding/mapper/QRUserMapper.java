@@ -10,11 +10,12 @@ import com.cywedding.dto.QRUser;
 @Mapper
 public interface QRUserMapper {
 
-    QRUser fetchQRUser(String code);
+    QRUser fetchQRUser(QRUser user);
+    QRUser fetchQRUserAdmin(QRUser user);
 
     void updateUserList(@Param("userList") List<QRUser> userList);
 
-    void resetUserList();
+    void resetUserList(@Param("groupId") Integer groupId);
 
     void createUserList(@Param("userList") List<QRUser> userList);
 }

@@ -2,6 +2,8 @@ package com.cywedding.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,20 +15,29 @@ import com.cywedding.mapper.QRUserMapper;
 
 @RestController
 public class HealthCheckController {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private QRUserMapper userMapper;
 
     @GetMapping("/healthcheck")
-    public String healthCheck(@RequestParam(required = false) String code) {
+    public Map<String, Object> healthCheck(
+            @RequestParam(required = false) String domain,
+            @RequestParam(required = false) String code
+    ) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        
+        result.put("status", "SERVER IS RUNNING");
+        result.put("timestamp", LocalDateTime.now().format(FORMATTER));
 
-        String result = "SERVER IS RUNNING : " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        if (code != null) {
-            QRUser user = userMapper.fetchQRUser(code);
+        if (domain != null && code != null) {
+            QRUser param = new QRUser();
+            param.setGroupName(domain);
+            param.setQrCode(code);
+
+            QRUser user = userMapper.fetchQRUser(param);
             if (user != null) {
-                result += "\nUSER: " + user;
-            } else {
-                result += "\nUSER: not found for code = " + code;
+                result.put("user", user);
             }
         }
 

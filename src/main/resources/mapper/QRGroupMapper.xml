@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.QRGroupMapper">
+
+    <!-- SELECT -->
+    <select id="fetchQRGroup" parameterType="string" resultType="com.cywedding.dto.QRGroup">
+        SELECT
+            group_id,
+            group_name,
+            max_uploads,
+            max_votes
+        FROM qr_group 
+        WHERE group_name = #{groupName}
+    </select>
+
+    <!-- INSERT -->
+    <insert id="createGroup" parameterType="com.cywedding.dto.QRGroup" useGeneratedKeys="true" keyProperty="groupId">
+        INSERT INTO qr_group (group_name)
+        VALUES (#{groupName})
+    </insert>
+</mapper>

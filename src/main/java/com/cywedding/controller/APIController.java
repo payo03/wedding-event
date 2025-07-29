@@ -14,6 +14,7 @@ import com.cywedding.common.DMLType;
 import com.cywedding.config.UploadLimitConfig;
 import com.cywedding.service.CloudinaryService;
 import com.cywedding.service.ImageService;
+import com.cywedding.service.QRGroupService;
 import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
 import com.cywedding.dto.QRUser;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class APIController {
     private static final Logger logger = LoggerFactory.getLogger(APIController.class);
 
+    private final QRGroupService groupService;
     private final QRUserService userService;
     private final ImageService imageService;
     private final VoteService voteService;
@@ -37,42 +39,66 @@ public class APIController {
     @Autowired
     private UploadLimitConfig limitConfig;
 
-    public APIController(QRUserService userService, ImageService imageService, VoteService voteService, CloudinaryService cloudinaryService) {
+    public APIController(
+        QRGroupService groupService, 
+        QRUserService userService, 
+        ImageService imageService, 
+        VoteService voteService, 
+        CloudinaryService cloudinaryService
+    ) {
+        this.groupService = groupService;
         this.userService = userService;
         this.imageService = imageService;
         this.voteService = voteService;
         this.cloudinaryService = cloudinaryService;
     }
 
+    /**
+     * QR 코드 생성 요청
+     * @param infoMap   QR 코드 생성에 필요한 정보가 담긴 Map
+     */
     @PostMapping("/qr/create")
     public void qrCreate(
-        @RequestHeader("X-QR-CODE") String code,
-        @RequestBody Map<String, String> infoMap
+            @RequestBody Map<String, String> infoMap
     ) {
         String domain = infoMap.get("domain");
         String prefix = infoMap.get("prefix");
         int count = Integer.parseInt(infoMap.get("count"));
 
-        userService.resetUserList();
-        userService.createUserList(prefix, count);
+        groupService.createQR(domain, prefix, count);
     }
 
+    /**
+     * QR 코드로 사용자 정보 조회
+     * @param code      Header로 전달되는 QR 코드
+     * @return          ResponseEntity containing QRUser information
+     */
     @GetMapping("/user/check")
-    public ResponseEntity<?> checkUser(@RequestHeader("X-QR-CODE") String code) {
-        QRUser user = userService.fetchQRUser(code);
+    public ResponseEntity<?> checkUser(
+            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-QR-CODE") String code
+    ) {
+        QRUser user = userService.fetchQRUser(domain, code);
         
         return ResponseEntity.ok(user);
     }
 
+    /**
+     * 이미지 업로드 요청
+     * @param code      Header로 전달되는 QR 코드
+     * @param file      업로드할 이미지 파일
+     * @return          ResponseEntity containing success status and message
+     */
     @PostMapping("/image/upload")
     public ResponseEntity<?> uploadImage(
+            @RequestHeader("X-DOMAIN") String domain,
             @RequestHeader("X-QR-CODE") String code,
-            @RequestParam("file") MultipartFile file
+            @RequestParam MultipartFile file
         ) {
         Map<String, Object> returnMap = new HashMap<>();
 
         // 1. 기 업로드 요청자일경우
-        Boolean isValid = userService.validDML(code, DMLType.UPLOAD);
+        Boolean isValid = userService.validDML(domain, code, DMLType.UPLOAD);
         if (!isValid) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
@@ -99,7 +125,7 @@ public class APIController {
         try {
             byte[] fileBytes = file.getBytes();
             String fileName = file.getOriginalFilename();
-            cloudinaryService.asyncUploadImage(code, fileName, fileBytes);
+            cloudinaryService.asyncUploadImage(domain, code, fileName, fileBytes);
 
             // 성공 응답
             returnMap.put("success", true);
@@ -118,13 +144,22 @@ public class APIController {
         }
     }
 
+    /**
+     * 이미지 목록 조회 요청
+     * @param code      Header로 전달되는 QR 코드
+     * @return          ResponseEntity containing list of images and user information
+     */
     @GetMapping("/image/list")
-    public ResponseEntity<?> getImageList(@RequestHeader("X-QR-CODE") String code) {
+    public ResponseEntity<?> getImageList(
+            @RequestHeader("X-DOMAIN") String domain,
+            @RequestHeader("X-QR-CODE") String code
+    ) {
         Map<String, Object> returnMap = new HashMap<>();
 
-        QRUser user = userService.fetchQRUser(code);
+        QRUser user = userService.fetchQRUser(domain, code);
+        String plan = "premium"; // default
         try {
-            List<Image> imageList = imageService.selectImageList();
+            List<Image> imageList = imageService.selectImageList(user, plan);
 
             returnMap.put("success", true);
             returnMap.put("images", imageList);
@@ -143,8 +178,15 @@ public class APIController {
         }
     }
 
+    /**
+     * 이미지 투표 요청
+     * @param code      Header로 전달되는 QR 코드
+     * @param infoMap   투표할 이미지 정보가 담긴 Map (예: fileName)
+     * @return
+     */
     @PostMapping("/image/vote")
     public ResponseEntity<?> voteImage(
+            @RequestHeader("X-DOMAIN") String domain,
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
     ) {
@@ -154,13 +196,13 @@ public class APIController {
 
         String message = "✅ 투표 완료! ✅";
         try {
-            Boolean isValid = userService.validDML(code, DMLType.VOTE);
+            Boolean isValid = userService.validDML(domain, code, DMLType.VOTE);
             if(!isValid) {
-                voteService.deleteVote(code, fileName);
+                voteService.deleteVote(domain, code, fileName);
                 message = "♻️ 재투표 완료! ♻️";
             }
             
-            voteService.voteImage(code, fileName);
+            voteService.voteImage(domain, code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", message);
@@ -207,6 +249,7 @@ public class APIController {
 
     @PostMapping("/image/delete")
     public ResponseEntity<?> deleteImage(
+            @RequestHeader("X-DOMAIN") String domain,
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
     ) {
@@ -216,7 +259,7 @@ public class APIController {
 
         String message = "✅ 삭제 완료! ✅";
         try {
-            imageService.deleteImage(code, fileName);
+            imageService.deleteImage(domain, code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", message);
@@ -237,16 +280,19 @@ public class APIController {
     }
 
     @PostMapping("/image/email")
-    public ResponseEntity<?> sendEmail(@RequestBody Map<String, String> infoMap) {
+    public ResponseEntity<?> sendEmail(
+            @RequestHeader("X-DOMAIN") String domain,
+            @RequestBody Map<String, String> infoMap
+    ) {
         Map<String, Object> returnMap = new HashMap<>();
 
-        String emailAddress = infoMap.get("emailAddress");
         String plan = infoMap.get("plan");
+        String emailAddress = infoMap.get("emailAddress");
         
         Boolean success = true;
         String message = "✅ 이메일 전송 완료! ✅";
         try {
-            imageService.sendEmail(emailAddress, plan);
+            imageService.sendEmail(domain, plan, emailAddress);
 
             returnMap.put("success", success);
             returnMap.put("message", message);
