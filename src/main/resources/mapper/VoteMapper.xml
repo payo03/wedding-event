@@ -20,8 +20,14 @@
     <!-- DELETE VOTE -->
     <delete id="deleteVote" parameterType="com.cywedding.dto.Vote">
         DELETE FROM vote
-        WHERE qr_code = #{qrCode}
-            AND group_id = #{groupId}
+        WHERE ctid IN ( 
+            SELECT ctid
+            FROM vote
+            WHERE qr_code = #{qrCode}
+                AND group_id = #{groupId}
+            ORDER BY voted_at ASC
+            LIMIT 1
+        )
     </delete>
 
 </mapper>

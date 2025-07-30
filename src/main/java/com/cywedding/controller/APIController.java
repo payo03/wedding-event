@@ -102,7 +102,7 @@ public class APIController {
         if (!isValid) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", "❌ 업로드한 사진이 존재합니다. ❌"
+                "message", "❌ 이미지 업로드 횟수를 초과하였습니다. ❌"
             ));
         }
 
@@ -110,7 +110,7 @@ public class APIController {
         if (!limitConfig.tryAcquire()) {
             return ResponseEntity.status(429).body(Map.of(
                 "success", false,
-                "message", "❌ 업로드 요청이 많아 대기 중입니다. (최대 동시 업로드 인원: " + limitConfig.getLimit() + "명) 잠시 후 다시 시도해 주세요. ❌"
+                "message", "❌ 이미지 업로드 요청이 많아 대기 중입니다. (최대 동시 업로드 인원: " + limitConfig.getLimit() + "명) 잠시 후 다시 시도해 주세요. ❌"
             ));
         }
 
@@ -118,7 +118,7 @@ public class APIController {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", "❌ 파일이 비어 있습니다. ❌"
+                "message", "❌ 이미지가 비어 있습니다. ❌"
             ));
         }
         
@@ -138,7 +138,7 @@ public class APIController {
             logger.info("==================================================");
 
             returnMap.put("success", false);
-            returnMap.put("message", "❌ 파일 업로드 요청 중 오류 발생 ❌");
+            returnMap.put("message", "❌ 이미지 업로드 요청 중 오류 발생 ❌");
 
             return ResponseEntity.internalServerError().body(returnMap);
         }
