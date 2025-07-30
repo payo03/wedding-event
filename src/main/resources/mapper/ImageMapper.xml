@@ -22,8 +22,7 @@
             AND qu.group_id = i.group_id
         LEFT JOIN vote_count vc ON i.file_name = vc.file_name
         <if test="isEmail != true">
-            LEFT JOIN vote v ON v.group_id = i.group_id 
-                AND v.file_name = i.file_name
+            LEFT JOIN vote v ON v.file_name = i.file_name
                 AND v.qr_code = #{qrCode}
         </if>
         WHERE qu.group_id IN (0, #{groupId})
