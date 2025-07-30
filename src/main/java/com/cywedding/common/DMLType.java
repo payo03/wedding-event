@@ -3,5 +3,6 @@ package com.cywedding.common;
 public enum DMLType {
     UPLOAD,
     VOTE,
-    DELETE
+    UPLOAD_CANCEL,
+    VOTE_CANCEL
 }

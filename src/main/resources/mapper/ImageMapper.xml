@@ -14,14 +14,23 @@
             i.file_name,
             i.image_url,
             COALESCE(vc.count, 0) AS count
+            <if test="isEmail != true">
+                , v.qr_code AS voteQRCode
+            </if>
         FROM image i
         LEFT JOIN vote_count vc ON i.file_name = vc.file_name
+        <if test="isEmail != true">
+            LEFT JOIN vote v ON v.group_id = i.group_id 
+                AND v.file_name = i.file_name
+                AND v.qr_code = #{qrCode}
+        </if>
         INNER JOIN qr_user qu ON i.qr_code = qu.qr_code
+            AND qu.group_id = i.group_id
         WHERE qu.group_id = 0 
             OR qu.group_id = #{groupId}
         ORDER BY
         <choose>
-            <when test="qrCode != null">
+            <when test="isEmail != true">
                 CASE WHEN i.qr_code = #{qrCode} THEN 0 ELSE 1 END,
                 COALESCE(vc.count, 0) DESC
             </when>
@@ -42,8 +51,8 @@
 
     <!-- INSERT -->
     <insert id="uploadImage" parameterType="com.cywedding.dto.Image">
-        INSERT INTO image (qr_code, file_name, image_url)
-        VALUES (#{qrCode}, #{fileName}, #{imageUrl})
+        INSERT INTO image (qr_code, file_name, image_url, group_id)
+        VALUES (#{qrCode}, #{fileName}, #{imageUrl}, #{groupId})
     </insert>
 
     <!-- DELETE -->

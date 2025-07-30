@@ -3,6 +3,8 @@ package com.cywedding.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cywedding.config.UploadLimitConfig;
+import com.cywedding.dto.Image;
+import com.cywedding.dto.QRUser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,9 @@ public class CloudinaryService {
     private final Long INITIAL_DELAY = 1000L; // 1 second
 
     @Autowired
+    private QRUserService userService;
+
+    @Autowired
     private ImageService imageService;
 
     @Autowired
@@ -35,7 +40,7 @@ public class CloudinaryService {
     }
 
     @SuppressWarnings("unchecked")
-    public String uploadImage(byte[] fileBytes) throws IOException {
+    public String uploadCloudinaryImage(byte[] fileBytes) throws IOException {
         Map<String, Object> uploadResult = cloudinary.uploader().upload(fileBytes, ObjectUtils.emptyMap());
         
         return (String) uploadResult.get("secure_url");
@@ -51,10 +56,19 @@ public class CloudinaryService {
         Integer attempt = 0;
         try {
             logger.info("[UPLOAD TRY] code={}", code);
+
+            QRUser user = userService.fetchQRUser(domain, code);
             while (attempt < MAX_RETRIES) {
                 try {
-                    String url = uploadImage(fileBytes);
-                    imageService.uploadImage(domain, code, name, url);
+                    String url = uploadCloudinaryImage(fileBytes);
+
+                    Image image = new Image();
+                    image.setGroupId(user.getCustomGroupId());
+                    image.setGroupName(user.getGroupName());
+                    image.setQrCode(code);
+                    image.setFileName(name);
+                    image.setImageUrl(url);
+                    imageService.uploadImage(image);
 
                     logger.info("[UPLOAD SUCCESS] url={}", url);
                     break;

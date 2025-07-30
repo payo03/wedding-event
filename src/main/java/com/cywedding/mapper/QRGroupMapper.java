@@ -11,4 +11,5 @@ public interface QRGroupMapper {
     QRGroup fetchQRGroup(@Param("groupName") String groupName);
 
     void createGroup(QRGroup qrGroup);
+    void createPolicy(QRGroup qrGroup);
 }

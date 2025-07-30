@@ -5,14 +5,36 @@
     <!-- SELECT -->
     <select id="fetchQRUser" parameterType="com.cywedding.dto.QRUser" resultType="com.cywedding.dto.QRUser">
         SELECT
-            qr_code,
+            qu.qr_code,
             qu.group_id,
-            is_upload,
-            is_vote,
-            is_domain_admin,
-            is_admin
+            qg.group_name,
+            qu.is_domain_admin,
+            qu.is_admin,
+            CASE 
+                WHEN gp.max_uploads = qu.upload_count THEN TRUE
+                ELSE FALSE 
+            END AS is_upload,
+            CASE 
+                WHEN gp.max_votes = qu.vote_count THEN TRUE
+                ELSE FALSE 
+            END AS is_vote
         FROM qr_user qu
         INNER JOIN qr_group qg ON qu.group_id = qg.group_id
+        INNER JOIN (
+            SELECT DISTINCT ON (qg.group_id)
+                qg.group_id,
+                qg.group_name,
+                gp.max_uploads,
+                gp.max_votes,
+                gp.voting_start,
+                gp.voting_end,
+                gp.upload_start,
+                gp.upload_end
+            FROM qr_group qg
+            INNER JOIN group_policy gp
+                ON qg.group_id = gp.group_id
+            ORDER BY qg.group_id, gp.policy_version DESC
+        ) gp ON qu.group_id = gp.group_id
         WHERE qr_code = #{qrCode}
         AND qg.group_name = #{groupName}
     </select>
@@ -25,12 +47,35 @@
                 FROM qr_group
                 WHERE group_name = #{groupName}
             ) AS group_id,
-            qu.is_upload,
-            qu.is_vote,
+            qu.group_id AS admin_group_id,
+            qg.group_name,
             qu.is_domain_admin,
-            qu.is_admin
+            qu.is_admin,
+            CASE 
+                WHEN gp.max_uploads = qu.upload_count THEN TRUE
+                ELSE FALSE 
+            END AS is_upload,
+            CASE 
+                WHEN gp.max_votes = qu.vote_count THEN TRUE
+                ELSE FALSE 
+            END AS is_vote
         FROM qr_user qu
         INNER JOIN qr_group qg ON qu.group_id = qg.group_id
+        INNER JOIN (
+            SELECT DISTINCT ON (qg.group_id)
+                qg.group_id,
+                qg.group_name,
+                gp.max_uploads,
+                gp.max_votes,
+                gp.voting_start,
+                gp.voting_end,
+                gp.upload_start,
+                gp.upload_end
+            FROM qr_group qg
+            INNER JOIN group_policy gp
+                ON qg.group_id = gp.group_id
+            ORDER BY qg.group_id, gp.policy_version DESC
+        ) gp ON qu.group_id = gp.group_id
         WHERE qu.qr_code = #{qrCode}
         AND qg.group_name = 'admin'
     </select>
@@ -42,20 +87,21 @@
             <set>
                 <choose>
                     <when test="user.type == 'UPLOAD'">
-                        is_upload = true
+                        upload_count = upload_count + 1
                     </when>
                     <when test="user.type == 'VOTE'">
-                        is_vote = true
+                        vote_count = vote_count + 1
                     </when>
-                    <when test="user.type == 'DELETE'">
-                        is_upload = false
+                    <when test="user.type == 'UPLOAD_CANCEL'">
+                        upload_count = GREATEST(upload_count - 1, 0)
+                    </when>
+                    <when test="user.type == 'VOTE_CANCEL'">
+                        vote_count = GREATEST(vote_count - 1, 0)
                     </when>
                 </choose>
             </set>
-            FROM qr_group
-            WHERE qr_user.group_id = qr_group.group_id
-                AND qr_user.qr_code = #{user.qrCode}
-                AND qr_group.group_name = #{user.groupName}
+            WHERE qr_code = #{user.qrCode}
+                AND group_id = #{user.groupId}
         </foreach>
     </update>
 

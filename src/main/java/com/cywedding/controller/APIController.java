@@ -61,9 +61,11 @@ public class APIController {
     ) {
         String domain = infoMap.get("domain");
         String prefix = infoMap.get("prefix");
-        int count = Integer.parseInt(infoMap.get("count"));
+        Integer count = Integer.parseInt(infoMap.get("count"));
+        Integer maxUploads = Integer.parseInt(infoMap.get("maxUploads"));
+        Integer maxVotes = Integer.parseInt(infoMap.get("maxVotes"));
 
-        groupService.createQR(domain, prefix, count);
+        groupService.createQR(domain, prefix, count, maxUploads, maxVotes);
     }
 
     /**

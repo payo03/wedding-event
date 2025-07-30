@@ -11,7 +11,6 @@ import com.cywedding.dto.Image;
 import com.cywedding.dto.QRGroup;
 import com.cywedding.dto.QRUser;
 import com.cywedding.mapper.ImageMapper;
-import com.cywedding.mapper.QRGroupMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +27,7 @@ import java.util.zip.ZipOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,25 +37,25 @@ public class ImageService {
     private QRUserService userService;
 
     @Autowired
+    private QRGroupService groupService;
+
+    @Autowired
     private JavaMailSender mailSender;
 
     private final ImageMapper imageMapper;
-    private final QRGroupMapper groupMapper;
 
-    public void uploadImage(String domain, String code, String fileName, String url) {
-        Image image = new Image();
-        image.setQrCode(code);
-        image.setFileName(fileName);
-        image.setImageUrl(url);
-
+    @Transactional
+    public void uploadImage(Image image) {
         imageMapper.uploadImage(image);
 
-        QRUser user = new QRUser();
-        user.setGroupName(domain);
-        user.setQrCode(image.getQrCode());
-        user.setType(DMLType.UPLOAD.name());
+        QRUser user = userService.fetchQRUser(image.getGroupName(), image.getQrCode());
 
-        userService.updateUserList(user);
+        QRUser param = new QRUser();
+        param.setGroupId(user.getCustomGroupId());
+        param.setQrCode(user.getQrCode());
+        param.setType(DMLType.UPLOAD.name());
+
+        userService.updateUserList(param);
     }
 
     public List<Image> selectImageList(QRUser user, String plan) {
@@ -68,15 +68,17 @@ public class ImageService {
     }
 
     // 관리자 전용
+    @Transactional
     public void deleteImage(String domain, String code, String fileName) {
         Image image = fetchImage(fileName);
+        QRUser user = userService.fetchQRUser(domain, code);
 
-        QRUser user = new QRUser();
-        user.setGroupName(domain);
-        user.setQrCode(image.getQrCode());
-        user.setType(DMLType.DELETE.name());
+        QRUser param = new QRUser();
+        param.setGroupId(user.getGroupId());
+        param.setQrCode(image.getQrCode());
+        param.setType(DMLType.UPLOAD_CANCEL.name());
 
-        userService.updateUserList(user);
+        userService.updateUserList(param);
         imageMapper.deleteImage(fileName);
     }
 
@@ -90,9 +92,9 @@ public class ImageService {
 
     @Async
     public void sendEmail(String domain, String plan, String emailAddress) throws MessagingException, IOException {
-        QRGroup group = groupMapper.fetchQRGroup(domain);
+        QRGroup group = groupService.fetchQRGroup(domain);
 
-        Image param = new Image();
+        Image param = new Image(true);
         param.setGroupId(group.getGroupId());
         param.setPlan(plan);
         List<Image> imageList = imageMapper.selectImageList(param);

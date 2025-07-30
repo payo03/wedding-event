@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cywedding.dto.QRGroup;
 import com.cywedding.dto.QRUser;
@@ -23,7 +24,12 @@ public class QRGroupService {
     private final QRGroupMapper groupMapper;
     private final QRUserMapper userMapper;
 
-    public void createQR(String groupName, String prefix, Integer count) {
+    public QRGroup fetchQRGroup(String groupName) {
+        return groupMapper.fetchQRGroup(groupName);
+    }
+
+    @Transactional
+    public void createQR(String groupName, String prefix, Integer count, Integer maxUploads, Integer maxVotes) {
         QRGroup group = groupMapper.fetchQRGroup(groupName);
 
         if (group == null) {
@@ -34,9 +40,12 @@ public class QRGroupService {
         } else {
             userMapper.resetUserList(group.getGroupId());
         }
+        group.setMaxUploads(maxUploads);
+        group.setMaxVotes(maxVotes);
+        groupMapper.createPolicy(group);
+
         group.setPrefix(prefix);
         group.setCount(count);
-
         createUserList(group);
     }
 

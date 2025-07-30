@@ -2,6 +2,9 @@ package com.cywedding.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 
 @Data
@@ -11,8 +14,14 @@ public class QRGroup {
     // FIELD
     private Integer groupId;
     private String groupName;
+    
+    // FEIDL2 (policy)
     private Integer maxUploads;
     private Integer maxVotes;
+    private LocalDateTime votingStart;
+    private LocalDateTime votingEnd;
+    private LocalDateTime uploadStart;
+    private LocalDateTime uploadEnd;
     
     // CUSTOM
     private String prefix;
