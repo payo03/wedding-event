@@ -16,6 +16,7 @@ public class QRGroup {
     private String groupName;
     
     // FEIDL2 (policy)
+    private Integer policyVersion;
     private Integer maxUploads;
     private Integer maxVotes;
     private LocalDateTime votingStart;

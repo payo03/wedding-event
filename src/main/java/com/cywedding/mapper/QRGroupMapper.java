@@ -12,4 +12,6 @@ public interface QRGroupMapper {
 
     void createGroup(QRGroup qrGroup);
     void createPolicy(QRGroup qrGroup);
+
+    void insertQRPolicy(QRGroup group);
 }

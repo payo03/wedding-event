@@ -1,5 +1,6 @@
 package com.cywedding.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -62,5 +63,18 @@ public class QRGroupService {
 
         logger.info("생성된 QRUser 목록: {}", userList);
         userMapper.createUserList(userList);
+    }
+
+    public void updateQRTime(String groupName, 
+            LocalDateTime uploadStart, LocalDateTime uploadEnd,
+            LocalDateTime votingStart, LocalDateTime votingEnd
+    ) {
+        QRGroup group = groupMapper.fetchQRGroup(groupName);
+        group.setUploadStart(uploadStart);
+        group.setUploadEnd(uploadEnd);
+        group.setVotingStart(votingStart);
+        group.setVotingEnd(votingEnd);
+
+        groupMapper.insertQRPolicy(group);
     }
 }

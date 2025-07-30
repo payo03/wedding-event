@@ -7,6 +7,7 @@
         SELECT DISTINCT ON (qg.group_id)
             qg.group_id,
             qg.group_name,
+            gp.policy_version,
             gp.max_uploads,
             gp.max_votes,
             gp.voting_start,
@@ -27,7 +28,7 @@
     </insert>
 
     <insert id="createPolicy" parameterType="com.cywedding.dto.QRGroup">
-        INSERT INTO public.group_policy (
+        INSERT INTO group_policy (
             group_id, max_uploads, max_votes, 
             voting_start, voting_end, upload_start, upload_end
         )
@@ -37,6 +38,18 @@
             (current_date + INTERVAL '3 days')::timestamp,
             (current_date - INTERVAL '3 days')::timestamp,
             (current_date + INTERVAL '3 days')::timestamp
+        );
+    </insert>
+
+    <insert id="insertQRPolicy" parameterType="com.cywedding.dto.QRGroup">
+        INSERT INTO group_policy (
+            group_id, max_uploads, max_votes, 
+            voting_start, voting_end, upload_start, upload_end
+        )
+        VALUES (
+            #{groupId}, #{maxUploads}, #{maxVotes}, 
+            #{votingStart}, #{votingEnd},
+            #{uploadStart}, #{uploadEnd}
         );
     </insert>
 </mapper>

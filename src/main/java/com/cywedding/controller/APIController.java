@@ -20,6 +20,7 @@ import com.cywedding.service.QRUserService;
 import com.cywedding.dto.QRUser;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,9 +70,29 @@ public class APIController {
     }
 
     /**
+     * QR 코드 시간 조정 요청
+     * @param groupName Header로 전달되는 그룹 이름
+     * @param infoMap   시간 조정에 필요한 정보가 담긴 Map (예: uploadStart, uploadEnd, votingStart, votingEnd)
+     */
+    @PostMapping("/qr/time")
+    public void updateQRTime(
+            @RequestHeader("X-DOMAIN") String groupName,
+            @RequestBody Map<String, String> infoMap
+    ) {
+        logger.info("{}", infoMap);
+        LocalDateTime uploadStart = LocalDateTime.parse(infoMap.get("uploadStart"));
+        LocalDateTime uploadEnd = LocalDateTime.parse(infoMap.get("uploadEnd"));
+        LocalDateTime votingStart = LocalDateTime.parse(infoMap.get("votingStart"));
+        LocalDateTime votingEnd = LocalDateTime.parse(infoMap.get("votingEnd"));
+
+        groupService.updateQRTime(groupName, uploadStart, uploadEnd, votingStart, votingEnd);
+    }
+
+    /**
      * QR 코드로 사용자 정보 조회
+     * @param groupName Header로 전달되는 그룹 이름
      * @param code      Header로 전달되는 QR 코드
-     * @return          ResponseEntity containing QRUser information
+     * @return
      */
     @GetMapping("/user/check")
     public ResponseEntity<?> checkUser(
@@ -85,9 +106,10 @@ public class APIController {
 
     /**
      * 이미지 업로드 요청
+     * @param groupName Header로 전달되는 그룹 이름
      * @param code      Header로 전달되는 QR 코드
      * @param file      업로드할 이미지 파일
-     * @return          ResponseEntity containing success status and message
+     * @return
      */
     @PostMapping("/image/upload")
     public ResponseEntity<?> uploadImage(
@@ -146,8 +168,9 @@ public class APIController {
 
     /**
      * 이미지 목록 조회 요청
+     * @param groupName Header로 전달되는 그룹 이름
      * @param code      Header로 전달되는 QR 코드
-     * @return          ResponseEntity containing list of images and user information
+     * @return
      */
     @GetMapping("/image/list")
     public ResponseEntity<?> getImageList(
@@ -178,6 +201,7 @@ public class APIController {
 
     /**
      * 이미지 투표 요청
+     * @param groupName Header로 전달되는 그룹 이름
      * @param code      Header로 전달되는 QR 코드
      * @param infoMap   투표할 이미지 정보가 담긴 Map (예: fileName)
      * @return
@@ -245,6 +269,13 @@ public class APIController {
         }
     }
 
+    /**
+     * 이미지 삭제 요청
+     * @param groupName Header로 전달되는 그룹 이름
+     * @param code      Header로 전달되는 QR 코드
+     * @param infoMap   삭제할 이미지 정보가 담긴 Map (예: fileName)
+     * @return
+     */
     @PostMapping("/image/delete")
     public ResponseEntity<?> deleteImage(
             @RequestHeader("X-DOMAIN") String groupName,
@@ -277,6 +308,12 @@ public class APIController {
         }
     }
 
+    /**
+     * 이메일로 이미지 전송 요청
+     * @param groupName Header로 전달되는 그룹 이름
+     * @param infoMap   이메일 전송에 필요한 정보가 담긴 Map (예: plan, emailAddress)
+     * @return
+     */
     @PostMapping("/image/email")
     public ResponseEntity<?> sendEmail(
             @RequestHeader("X-DOMAIN") String groupName,
