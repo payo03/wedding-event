@@ -1,5 +1,7 @@
 package com.cywedding.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -11,6 +13,14 @@ public class QRUser {
     private Integer voteCount;
     private boolean isDomainAdmin;
     private boolean isAdmin;
+
+    // FEIDL2 (policy)
+    private Integer maxUploads;
+    private Integer maxVotes;
+    private LocalDateTime votingStart;
+    private LocalDateTime votingEnd;
+    private LocalDateTime uploadStart;
+    private LocalDateTime uploadEnd;
 
     // CUSTOM
     private Integer adminGroupId;

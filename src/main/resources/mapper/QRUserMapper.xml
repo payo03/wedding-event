@@ -10,6 +10,12 @@
             qg.group_name,
             qu.is_domain_admin,
             qu.is_admin,
+            gp.max_uploads,
+            gp.max_votes,
+            gp.voting_start,
+            gp.voting_end,
+            gp.upload_start,
+            gp.upload_end,
             CASE 
                 WHEN gp.max_uploads = qu.upload_count THEN TRUE
                 ELSE FALSE 
@@ -51,6 +57,12 @@
             qg.group_name,
             qu.is_domain_admin,
             qu.is_admin,
+            gp.max_uploads,
+            gp.max_votes,
+            gp.voting_start,
+            gp.voting_end,
+            gp.upload_start,
+            gp.upload_end,
             CASE 
                 WHEN gp.max_uploads = qu.upload_count THEN TRUE
                 ELSE FALSE 

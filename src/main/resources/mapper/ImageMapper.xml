@@ -18,16 +18,15 @@
                 , v.qr_code AS voteQRCode
             </if>
         FROM image i
+        INNER JOIN qr_user qu ON i.qr_code = qu.qr_code
+            AND qu.group_id = i.group_id
         LEFT JOIN vote_count vc ON i.file_name = vc.file_name
         <if test="isEmail != true">
             LEFT JOIN vote v ON v.group_id = i.group_id 
                 AND v.file_name = i.file_name
                 AND v.qr_code = #{qrCode}
         </if>
-        INNER JOIN qr_user qu ON i.qr_code = qu.qr_code
-            AND qu.group_id = i.group_id
-        WHERE qu.group_id = 0 
-            OR qu.group_id = #{groupId}
+        WHERE qu.group_id IN (0, #{groupId})
         ORDER BY
         <choose>
             <when test="isEmail != true">
