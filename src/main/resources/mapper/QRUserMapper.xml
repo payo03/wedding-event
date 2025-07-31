@@ -8,6 +8,7 @@
             qu.qr_code,
             qu.group_id,
             qg.group_name,
+            qg.image_url,
             qu.is_domain_admin,
             qu.is_admin,
             gp.max_uploads,
@@ -50,6 +51,7 @@
                 SELECT DISTINCT ON (qg.group_id)
                 qg.group_id,
                 qg.group_name,
+                qg.image_url,
                 gp.max_uploads,
                 gp.max_votes,
                 gp.voting_start,
@@ -67,6 +69,7 @@
             uqg.group_id AS group_id,
             qu.group_id AS admin_group_id,
             uqg.group_name,
+            uqg.image_url,
             qu.is_domain_admin AS is_domain_admin,
             qu.is_admin,
             uqg.max_uploads,

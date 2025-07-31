@@ -28,6 +28,7 @@ public class QRUser {
     private boolean isVote;
     private String type;
     private String groupName;
+    private String imageUrl;
 
     public Integer getCustomGroupId() {
         return isAdmin ? adminGroupId : groupId;
