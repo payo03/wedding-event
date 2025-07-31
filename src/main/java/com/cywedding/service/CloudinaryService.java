@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class CloudinaryService {
 
     private final Integer MAX_RETRIES = 3;
     private final Long INITIAL_DELAY = 1000L; // 1 second
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
 
     @Autowired
     private QRUserService userService;
@@ -34,23 +36,26 @@ public class CloudinaryService {
     private UploadLimitConfig limitConfig;
 
     private final Cloudinary cloudinary;
-
     public CloudinaryService(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
     }
-
+    
     @SuppressWarnings("unchecked")
-    public String uploadCloudinaryImage(byte[] fileBytes) throws IOException {
-        Map<String, Object> uploadResult = cloudinary.uploader().upload(fileBytes, ObjectUtils.emptyMap());
+    public String uploadCloudinaryImage(byte[] fileBytes, Map<String, Object> options) throws IOException {
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(fileBytes, options);
         
         return (String) uploadResult.get("secure_url");
     }
 
     @Async
-    public void asyncUploadImage(String domain, String code, String fileName, byte[] fileBytes) throws IOException {
-        String extension = fileName.substring(fileName.lastIndexOf("."));
-        String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd HHmmss"));
-        String name = domain + "-" + code + "_" + timeStamp + extension;
+    @SuppressWarnings("unchecked")
+    public void asyncUploadImage(String domain, String code, String paramName, byte[] fileBytes) throws IOException {
+        String extension = paramName.substring(paramName.lastIndexOf("."));
+        String timeStamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+        String fileName = domain + "-" + code + "_" + timeStamp + extension;
+
+        String folderName = domain + "/" + LocalDate.now().toString();
+        String uploadName = code + "_" + timeStamp + extension;
 
         long delay = INITIAL_DELAY;
         Integer attempt = 0;
@@ -58,15 +63,22 @@ public class CloudinaryService {
             logger.info("[UPLOAD TRY] code={}", code);
 
             QRUser user = userService.fetchQRUser(domain, code);
+            Map<String, Object> options = ObjectUtils.asMap(
+                "folder", folderName,
+                "public_id", uploadName,
+                "overwrite", true,
+                "use_filename", true,
+                "unique_filename", true
+            );
             while (attempt < MAX_RETRIES) {
                 try {
-                    String url = uploadCloudinaryImage(fileBytes);
+                    String url = uploadCloudinaryImage(fileBytes, options);
 
                     Image image = new Image();
                     image.setGroupId(user.getCustomGroupId());
                     image.setGroupName(user.getGroupName());
                     image.setQrCode(code);
-                    image.setFileName(name);
+                    image.setFileName(fileName);
                     image.setImageUrl(url);
                     imageService.uploadImage(image);
 
