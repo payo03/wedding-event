@@ -14,6 +14,8 @@ public class QRGroup {
     // FIELD
     private Integer groupId;
     private String groupName;
+    private String plan;
+    private String imageUrl;
     
     // FEIDL2 (policy)
     private Integer policyVersion;

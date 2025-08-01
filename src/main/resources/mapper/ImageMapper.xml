@@ -41,9 +41,17 @@
                 COALESCE(vc.count, 0) DESC
             </otherwise>
         </choose>
-        <if test="plan != null and plan.equals('ECO')">
-            LIMIT 10
-        </if>
+        <choose>
+            <when test="'E'.equals(plan)">
+                LIMIT 10
+            </when>
+            <when test="'G'.equals(plan)">
+                LIMIT 50
+            </when>
+            <otherwise>
+
+            </otherwise>
+          </choose>
     </select>
 
     <select id="selectImage" parameterType="string" resultType="com.cywedding.dto.Image">

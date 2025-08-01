@@ -66,10 +66,14 @@ public class QRGroupService {
     }
 
     public void updateQRTime(String groupName, 
+            Integer maxUploads, Integer maxVotes,
             LocalDateTime uploadStart, LocalDateTime uploadEnd,
             LocalDateTime votingStart, LocalDateTime votingEnd
     ) {
         QRGroup group = groupMapper.fetchQRGroup(groupName);
+        group.setMaxUploads(maxUploads);
+        group.setMaxVotes(maxVotes);
+        
         group.setUploadStart(uploadStart);
         group.setUploadEnd(uploadEnd);
         group.setVotingStart(votingStart);

@@ -82,13 +82,19 @@ public class APIController {
             @RequestHeader("X-DOMAIN") String groupName,
             @RequestBody Map<String, String> infoMap
     ) {
+        logger.info("==================================================");
         logger.info("{}", infoMap);
+        logger.info("==================================================");
+
+        Integer maxUploads = Integer.parseInt(infoMap.get("maxUploads"));
+        Integer maxVotes = Integer.parseInt(infoMap.get("maxVotes"));
+
         LocalDateTime uploadStart = LocalDateTime.parse(infoMap.get("uploadStart"));
         LocalDateTime uploadEnd = LocalDateTime.parse(infoMap.get("uploadEnd"));
         LocalDateTime votingStart = LocalDateTime.parse(infoMap.get("votingStart"));
         LocalDateTime votingEnd = LocalDateTime.parse(infoMap.get("votingEnd"));
 
-        groupService.updateQRTime(groupName, uploadStart, uploadEnd, votingStart, votingEnd);
+        groupService.updateQRTime(groupName, maxUploads, maxVotes, uploadStart, uploadEnd, votingStart, votingEnd);
     }
 
     /**
@@ -183,7 +189,7 @@ public class APIController {
         Map<String, Object> returnMap = new HashMap<>();
 
         QRUser user = userService.fetchQRUser(groupName, code);
-        String plan = "premium"; // default
+        String plan = "P"; // default
         try {
             // Admin 혹은 본인사진인경우
             List<Image> images = imageService.selectImageList(user, plan).stream()
