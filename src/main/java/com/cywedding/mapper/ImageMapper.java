@@ -16,6 +16,6 @@ public interface ImageMapper {
 
     void uploadImage(Image image);
     
-    void deleteImageByFileName(@Param("fileName") String fileName);
+    void deleteImageByImage(Image image);
     void deleteImageByUser(QRUser user);
 }

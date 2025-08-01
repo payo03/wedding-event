@@ -339,7 +339,7 @@ public class APIController {
 
         String message = "✅ 삭제 완료! ✅";
         try {
-            imageService.deleteImage(groupName, code, fileName);
+            cloudinaryService.asyncDeleteImage(groupName, code, fileName);
 
             returnMap.put("success", true);
             returnMap.put("message", message);

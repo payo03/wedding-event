@@ -56,7 +56,7 @@
     </select>
 
     <select id="selectImage" parameterType="string" resultType="com.cywedding.dto.Image">
-        SELECT qr_code, image_url
+        SELECT qr_code, file_name, image_url, group_id
         FROM image
         WHERE file_name = #{fileName}
     </select>
@@ -68,13 +68,15 @@
     </insert>
 
     <!-- DELETE -->
-    <insert id="deleteImageByFileName" parameterType="string">
+    <insert id="deleteImageByImage" parameterType="com.cywedding.dto.Image">
         DELETE FROM image
         WHERE file_name = #{fileName}
+            AND group_id = #{groupId}
     </insert>
     <insert id="deleteImageByUser" parameterType="com.cywedding.dto.QRUser">
         DELETE FROM image
         WHERE qr_code = #{qrCode}
+            AND group_id = #{groupId}
     </insert>
 
 </mapper>

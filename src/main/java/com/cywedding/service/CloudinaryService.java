@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -49,23 +48,20 @@ public class CloudinaryService {
 
     @Async
     @SuppressWarnings("unchecked")
-    public void asyncUploadImage(String domain, String code, String paramName, byte[] fileBytes) throws IOException {
+    public void asyncUploadImage(String groupName, String code, String paramName, byte[] fileBytes) throws IOException {
         String extension = paramName.substring(paramName.lastIndexOf("."));
         String timeStamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-        String fileName = domain + "-" + code + "_" + timeStamp + extension;
-
-        String folderName = domain + "/" + LocalDate.now().toString();
-        String uploadName = code + "_" + timeStamp + extension;
+        String fileName = code + "_" + timeStamp + extension;
 
         long delay = INITIAL_DELAY;
         Integer attempt = 0;
         try {
             logger.info("[UPLOAD TRY] code={}", code);
 
-            QRUser user = userService.fetchQRUser(domain, code);
+            QRUser user = userService.fetchQRUser(groupName, code);
             Map<String, Object> options = ObjectUtils.asMap(
-                "folder", folderName,
-                "public_id", uploadName,
+                "folder", groupName,
+                "public_id", fileName,
                 "overwrite", true,
                 "use_filename", true,
                 "unique_filename", true
@@ -101,6 +97,28 @@ public class CloudinaryService {
             }
         } finally {
             limitConfig.release();
+        }
+    }
+
+    @Async
+    @SuppressWarnings("unchecked")
+    public void asyncDeleteImage(String groupName, String code, String fileName) {
+        Image image = imageService.fetchImage(fileName);
+
+        try {
+            logger.info("[DELETE START] group={}, file={}", groupName, fileName);
+
+            String publicId = groupName + "/" + fileName;
+            String newPublicId = groupName + "/remove/" + fileName;
+            Map<String, Object> options = ObjectUtils.asMap(
+                "overwrite", true
+            );
+    
+            cloudinary.uploader().rename(publicId, newPublicId, options);
+
+            imageService.deleteImage(groupName, code, fileName);    
+        } catch (Exception e) {
+            logger.error("[DELETE FAILED] file={}, error={}", fileName, e.getMessage(), e);
         }
     }
 }
