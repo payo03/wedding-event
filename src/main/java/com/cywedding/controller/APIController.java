@@ -17,12 +17,15 @@ import com.cywedding.service.ImageService;
 import com.cywedding.service.QRGroupService;
 import com.cywedding.service.VoteService;
 import com.cywedding.service.QRUserService;
+import com.cywedding.dto.Image;
 import com.cywedding.dto.QRUser;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -182,8 +185,13 @@ public class APIController {
         QRUser user = userService.fetchQRUser(groupName, code);
         String plan = "premium"; // default
         try {
+            // Admin 혹은 본인사진인경우
+            List<Image> images = imageService.selectImageList(user, plan).stream()
+                .filter(image -> user.isDomainAdmin() || user.isAdmin() || image.isOpen())
+                .collect(Collectors.toList());
+
             returnMap.put("success", true);
-            returnMap.put("images", imageService.selectImageList(user, plan));
+            returnMap.put("images", images);
             returnMap.put("user", user);
 
             return ResponseEntity.ok(returnMap);

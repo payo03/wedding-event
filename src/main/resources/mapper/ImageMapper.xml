@@ -13,6 +13,11 @@
             i.qr_code,
             i.file_name,
             i.image_url,
+            CASE 
+                WHEN i.qr_code = #{qrCode} THEN TRUE
+                WHEN i.created_at &lt;= now() - interval '1 minute' THEN TRUE
+                ELSE FALSE
+            END AS is_open,
             COALESCE(vc.count, 0) AS count
             <if test="isEmail != true">
                 , v.qr_code AS voteQRCode

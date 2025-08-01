@@ -1,18 +1,22 @@
 package com.cywedding.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
 public class Image {
     // FIELD
-    private String fileName;
     private String qrCode;
+    private String fileName;
     private String imageUrl;
+    private Integer groupId;
+    private LocalDateTime createdAt;
 
     // CUSTOM
-    private Boolean isEmail;
+    private boolean isOpen;
+    private boolean isEmail;
     private String voteQRCode;
-    private Integer groupId;
     private String groupName;
 
     private Integer count;
