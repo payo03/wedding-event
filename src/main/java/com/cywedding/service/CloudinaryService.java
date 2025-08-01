@@ -103,8 +103,6 @@ public class CloudinaryService {
     @Async
     @SuppressWarnings("unchecked")
     public void asyncDeleteImage(String groupName, String code, String fileName) {
-        Image image = imageService.fetchImage(fileName);
-
         try {
             logger.info("[DELETE START] group={}, file={}", groupName, fileName);
 
