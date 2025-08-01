@@ -107,6 +107,9 @@
                     <when test="user.type == 'VOTE_CANCEL'">
                         vote_count = GREATEST(vote_count - 1, 0)
                     </when>
+                    <when test="user.type == 'UPLOAD_BANNED'">
+                        upload_count = 99999
+                    </when>
                 </choose>
             </set>
             WHERE qr_code = #{user.qrCode}

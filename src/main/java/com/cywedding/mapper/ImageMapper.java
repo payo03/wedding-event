@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.cywedding.dto.Image;
+import com.cywedding.dto.QRUser;
 
 @Mapper
 public interface ImageMapper {
@@ -15,5 +16,6 @@ public interface ImageMapper {
 
     void uploadImage(Image image);
     
-    void deleteImage(@Param("fileName") String fileName);
+    void deleteImageByFileName(@Param("fileName") String fileName);
+    void deleteImageByUser(QRUser user);
 }

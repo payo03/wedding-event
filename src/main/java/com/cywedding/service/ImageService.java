@@ -79,7 +79,11 @@ public class ImageService {
         param.setType(DMLType.UPLOAD_CANCEL.name());
 
         userService.updateUserList(param);
-        imageMapper.deleteImage(fileName);
+        imageMapper.deleteImageByFileName(fileName);
+    }
+
+    public void deleteImage(QRUser user) {
+        imageMapper.deleteImageByUser(user);
     }
 
     public Image fetchImage(String fileName) {

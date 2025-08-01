@@ -213,6 +213,43 @@ public class APIController {
         }
     }
 
+    @PostMapping("/image/banned")
+    public ResponseEntity<?> bannedUser(
+            @RequestHeader("X-DOMAIN") String groupName,
+            @RequestHeader("X-QR-CODE") String code,
+            @RequestBody Map<String, String> infoMap
+    ) {
+        Map<String, Object> returnMap = new HashMap<>();
+        
+        logger.info("==================================================");
+        logger.info("{}", infoMap);
+        logger.info("==================================================");
+
+        String qrCode = infoMap.get("qrCode");
+        String fileName = infoMap.get("fileName");
+
+        String message = "✅ 사용자 금지 완료! ✅";
+        try {            
+            userService.bannedUser(groupName, qrCode, fileName);
+
+            returnMap.put("success", true);
+            returnMap.put("message", message);
+
+            return ResponseEntity.ok(returnMap);
+        } catch (Exception e) {
+            logger.info("==================================================");
+            e.printStackTrace();
+            logger.info("==================================================");
+
+            message = "❌ 사용자 업로드 금지 반영중 오류 발생 ❌";
+
+            returnMap.put("success", false);
+            returnMap.put("message", message);
+
+            return ResponseEntity.internalServerError().body(returnMap);
+        }
+    }
+
     /**
      * 이미지 투표 요청
      * @param groupName Header로 전달되는 그룹 이름

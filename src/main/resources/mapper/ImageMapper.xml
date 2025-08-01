@@ -13,6 +13,7 @@
             i.qr_code,
             i.file_name,
             i.image_url,
+            i.created_at,
             CASE 
                 WHEN i.qr_code = #{qrCode} THEN TRUE
                 WHEN i.created_at &lt;= now() - interval '1 minute' THEN TRUE
@@ -67,9 +68,13 @@
     </insert>
 
     <!-- DELETE -->
-    <insert id="deleteImage" parameterType="string">
+    <insert id="deleteImageByFileName" parameterType="string">
         DELETE FROM image
         WHERE file_name = #{fileName}
+    </insert>
+    <insert id="deleteImageByUser" parameterType="com.cywedding.dto.QRUser">
+        DELETE FROM image
+        WHERE qr_code = #{qrCode}
     </insert>
 
 </mapper>

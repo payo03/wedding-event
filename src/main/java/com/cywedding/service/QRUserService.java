@@ -5,9 +5,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cywedding.common.DMLType;
 import com.cywedding.dto.QRUser;
+import com.cywedding.mapper.ImageMapper;
 import com.cywedding.mapper.QRUserMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class QRUserService {
     private static final Logger logger = LoggerFactory.getLogger(QRUserService.class);
 
     private final QRUserMapper userMapper;
+    private final ImageMapper imageMapper;
 
     public QRUser fetchQRUser(String domain, String code) {
         logger.info("==================================================");
@@ -67,6 +70,15 @@ public class QRUserService {
         }
 
         return isValid;
+    }
+
+    @Transactional
+    public void bannedUser(String groupName, String qrCode, String fileName) {
+        QRUser bannedUser = fetchQRUser(groupName, qrCode);
+        bannedUser.setType(DMLType.UPLOAD_BANNED.name());
+
+        updateUserList(bannedUser);
+        imageMapper.deleteImageByUser(bannedUser);
     }
 
     public void updateUserList(QRUser user) { this.updateUserList(List.of(user)); }
