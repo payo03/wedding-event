@@ -29,4 +29,5 @@ public class QRGroup {
     // CUSTOM
     private String prefix;
     private Integer count;
+    private boolean isNoticeSkip;
 }

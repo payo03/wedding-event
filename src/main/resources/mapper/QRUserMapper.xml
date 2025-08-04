@@ -7,11 +7,13 @@
         SELECT
             qu.qr_code,
             qu.group_id,
+            qu.is_domain_admin,
+            qu.is_admin,
+            qu.is_notice_skip,
             qg.group_name,
             qg.plan,
             qg.image_url,
-            qu.is_domain_admin,
-            qu.is_admin,
+            qg.image_url2,
             gp.max_uploads,
             gp.max_votes,
             gp.voting_start,
@@ -54,6 +56,7 @@
                 qg.group_name,
                 qg.plan,
                 qg.image_url,
+                qg.image_url2,
                 gp.max_uploads,
                 gp.max_votes,
                 gp.voting_start,
@@ -70,11 +73,13 @@
             qu.qr_code,
             uqg.group_id AS group_id,
             qu.group_id AS admin_group_id,
+            qu.is_domain_admin AS is_domain_admin,
+            qu.is_admin,
+            qu.is_notice_skip,
             uqg.group_name,
             uqg.plan,
             uqg.image_url,
-            qu.is_domain_admin AS is_domain_admin,
-            qu.is_admin,
+            uqg.image_url2,
             uqg.max_uploads,
             uqg.max_votes,
             uqg.voting_start,
@@ -87,6 +92,51 @@
         JOIN user_qr_group uqg ON TRUE
         WHERE qu.qr_code = #{qrCode}
         AND qu.group_id = 0
+    </select>
+
+    <select id="fetchQRUserList" parameterType="string" resultType="com.cywedding.dto.QRUser">
+        SELECT
+            qu.qr_code,
+            qu.group_id,
+            qu.is_domain_admin,
+            qu.is_admin,
+            qu.is_notice_skip,
+            qg.group_name,
+            qg.plan,
+            qg.image_url,
+            qg.image_url2,
+            gp.max_uploads,
+            gp.max_votes,
+            gp.voting_start,
+            gp.voting_end,
+            gp.upload_start,
+            gp.upload_end,
+            CASE 
+                WHEN gp.max_uploads &lt;= qu.upload_count THEN TRUE
+                ELSE FALSE 
+            END AS is_upload,
+            CASE 
+                WHEN gp.max_votes &lt;= qu.vote_count THEN TRUE
+                ELSE FALSE 
+            END AS is_vote
+        FROM qr_user qu
+        INNER JOIN qr_group qg ON qu.group_id = qg.group_id
+        INNER JOIN (
+            SELECT DISTINCT ON (qg.group_id)
+                qg.group_id,
+                qg.group_name,
+                gp.max_uploads,
+                gp.max_votes,
+                gp.voting_start,
+                gp.voting_end,
+                gp.upload_start,
+                gp.upload_end
+            FROM qr_group qg
+            INNER JOIN group_policy gp
+                ON qg.group_id = gp.group_id
+            ORDER BY qg.group_id, gp.policy_version DESC
+        ) gp ON qu.group_id = gp.group_id
+        WHERE qu.group_name = #{groupName}
     </select>
 
     <!-- UPDATE -->
@@ -110,11 +160,21 @@
                     <when test="user.type == 'UPLOAD_BANNED'">
                         upload_count = 99999
                     </when>
+                    <when test="user.type == 'NOTICE'">
+                        is_notice_skip = #{user.isNoticeSkip}
+                    </when>
                 </choose>
             </set>
             WHERE qr_code = #{user.qrCode}
                 AND group_id = #{user.groupId}
         </foreach>
+    </update>
+
+    <update id="noticeSkipUser" parameterType="com.cywedding.dto.QRUser">
+        UPDATE qr_user
+        SET is_notice_skip = TRUE
+        WHERE qr_code = #{qrCode}
+        AND group_id = #{groupId}
     </update>
 
     <!-- DELETE -->
@@ -125,10 +185,10 @@
 
     <!-- INSERT -->
     <insert id="createUserList" parameterType="java.util.List">
-        INSERT INTO qr_user (qr_code, group_id)
+        INSERT INTO qr_user (qr_code, group_id, is_notice_skip)
         VALUES
         <foreach collection="userList" item="user" separator=",">
-            (#{user.qrCode}, #{user.groupId})
+            (#{user.qrCode}, #{user.groupId}, #{user.isNoticeSkip})
         </foreach>
     </insert>
 

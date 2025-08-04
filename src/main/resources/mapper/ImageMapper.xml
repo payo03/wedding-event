@@ -47,7 +47,7 @@
                 LIMIT 10
             </when>
             <when test="'G'.equals(plan)">
-                LIMIT 50
+                LIMIT 30
             </when>
             <otherwise>
 

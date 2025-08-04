@@ -25,8 +25,8 @@
 
     <!-- INSERT -->
     <insert id="createGroup" parameterType="com.cywedding.dto.QRGroup" useGeneratedKeys="true" keyProperty="groupId">
-        INSERT INTO qr_group (group_name)
-        VALUES (#{groupName})
+        INSERT INTO qr_group (group_name, plan)
+        VALUES (#{groupName}, #{plan})
     </insert>
 
     <insert id="createPolicy" parameterType="com.cywedding.dto.QRGroup">

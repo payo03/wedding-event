@@ -63,13 +63,8 @@ public class APIController {
     public void qrCreate(
             @RequestBody Map<String, String> infoMap
     ) {
-        String domain = infoMap.get("domain");
-        String prefix = infoMap.get("prefix");
-        Integer count = Integer.parseInt(infoMap.get("count"));
-        Integer maxUploads = Integer.parseInt(infoMap.get("maxUploads"));
-        Integer maxVotes = Integer.parseInt(infoMap.get("maxVotes"));
 
-        groupService.createQR(domain, prefix, count, maxUploads, maxVotes);
+        groupService.createQR(infoMap);
     }
 
     /**
@@ -86,15 +81,7 @@ public class APIController {
         logger.info("{}", infoMap);
         logger.info("==================================================");
 
-        Integer maxUploads = Integer.parseInt(infoMap.get("maxUploads"));
-        Integer maxVotes = Integer.parseInt(infoMap.get("maxVotes"));
-
-        LocalDateTime uploadStart = LocalDateTime.parse(infoMap.get("uploadStart"));
-        LocalDateTime uploadEnd = LocalDateTime.parse(infoMap.get("uploadEnd"));
-        LocalDateTime votingStart = LocalDateTime.parse(infoMap.get("votingStart"));
-        LocalDateTime votingEnd = LocalDateTime.parse(infoMap.get("votingEnd"));
-
-        groupService.updateQRTime(groupName, maxUploads, maxVotes, uploadStart, uploadEnd, votingStart, votingEnd);
+        groupService.updateQRTime(groupName, infoMap);
     }
 
     /**
@@ -109,6 +96,17 @@ public class APIController {
             @RequestHeader("X-QR-CODE") String code
     ) {
         QRUser user = userService.fetchQRUser(groupName, code);
+        
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/user/skip")
+    public ResponseEntity<?> noticeSkipUser(
+            @RequestHeader("X-DOMAIN") String groupName,
+            @RequestHeader("X-QR-CODE") String code
+    ) {
+        QRUser user = userService.fetchQRUser(groupName, code);
+        userService.noticeSkipUser(user);
         
         return ResponseEntity.ok(user);
     }
@@ -333,13 +331,18 @@ public class APIController {
             @RequestHeader("X-QR-CODE") String code,
             @RequestBody Map<String, String> infoMap
     ) {
+        logger.info("==================================================");
+        logger.info("{}", infoMap);
+        logger.info("==================================================");
+
         Map<String, Object> returnMap = new HashMap<>();
 
         String fileName = infoMap.get("fileName");
+        String imageUrl = infoMap.get("imageUrl");
 
         String message = "✅ 삭제 완료! ✅";
         try {
-            cloudinaryService.asyncDeleteImage(groupName, code, fileName);
+            cloudinaryService.asyncDeleteImage(groupName, code, fileName, imageUrl);
 
             returnMap.put("success", true);
             returnMap.put("message", message);

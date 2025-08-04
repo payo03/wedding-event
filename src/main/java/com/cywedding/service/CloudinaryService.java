@@ -9,12 +9,17 @@ import com.cywedding.dto.QRUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -32,6 +37,9 @@ public class CloudinaryService {
     private ImageService imageService;
 
     @Autowired
+    private RestClient restClient;
+
+    @Autowired
     private UploadLimitConfig limitConfig;
 
     private final Cloudinary cloudinary;
@@ -47,11 +55,11 @@ public class CloudinaryService {
     }
 
     @Async
-    @SuppressWarnings("unchecked")
     public void asyncUploadImage(String groupName, String code, String paramName, byte[] fileBytes) throws IOException {
         String extension = paramName.substring(paramName.lastIndexOf("."));
         String timeStamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-        String fileName = code + "_" + timeStamp + extension;
+        String uploadName = code + "_" + timeStamp;
+        String fileName = uploadName + extension;
 
         long delay = INITIAL_DELAY;
         Integer attempt = 0;
@@ -59,13 +67,7 @@ public class CloudinaryService {
             logger.info("[UPLOAD TRY] code={}", code);
 
             QRUser user = userService.fetchQRUser(groupName, code);
-            Map<String, Object> options = ObjectUtils.asMap(
-                "folder", groupName,
-                "public_id", fileName,
-                "overwrite", true,
-                "use_filename", true,
-                "unique_filename", true
-            );
+            Map<String, Object> options = makeUploadOptions(groupName, uploadName);
             while (attempt < MAX_RETRIES) {
                 try {
                     String url = uploadCloudinaryImage(fileBytes, options);
@@ -101,22 +103,48 @@ public class CloudinaryService {
     }
 
     @Async
+    @Transactional
     @SuppressWarnings("unchecked")
-    public void asyncDeleteImage(String groupName, String code, String fileName) {
+    public void asyncDeleteImage(String groupName, String code, String fileName, String imageUrl) {
         try {
             logger.info("[DELETE START] group={}, file={}", groupName, fileName);
 
-            String publicId = groupName + "/" + fileName;
-            String newPublicId = groupName + "/remove/" + fileName;
-            Map<String, Object> options = ObjectUtils.asMap(
-                "overwrite", true
-            );
-    
-            cloudinary.uploader().rename(publicId, newPublicId, options);
+            String fileNameOnly = removeExtension(fileName);
+            String publicId = groupName + "/" + fileNameOnly;
+            String removePublicId = groupName + "/remove";
 
-            imageService.deleteImage(groupName, code, fileName);    
+            // 1. Remove폴더 업로드(Cloudinary)
+            URI uri = URI.create(imageUrl);
+            Map<String, Object> uploadOptions = makeUploadOptions(removePublicId, fileNameOnly);
+
+            ResponseEntity<byte[]> response = restClient.get().uri(uri).retrieve().toEntity(byte[].class);
+            String url = uploadCloudinaryImage(response.getBody(), uploadOptions);
+            logger.info("[MOVE SUCCESS] newUrl={}", url);
+    
+            // 2. 기존 이미지 삭제(Cloudinary)
+            Map<String, Object> destroyResult = cloudinary.uploader().destroy(publicId, new HashMap<String, Object>());
+            logger.info("[DESTROY RESULT] {}", destroyResult);
         } catch (Exception e) {
             logger.error("[DELETE FAILED] file={}, error={}", fileName, e.getMessage(), e);
+        } finally {
+            // 3. DB 반영
+            imageService.deleteImage(groupName, code, fileName);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> makeUploadOptions(String folderName, String fileName) {
+        return ObjectUtils.asMap(
+            "folder", folderName,
+            "public_id", fileName,
+            "overwrite", true,
+            "use_filename", true,
+            "unique_filename", true
+        );
+    }
+
+    private String removeExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        return (dotIndex != -1) ? fileName.substring(0, dotIndex) : fileName;
     }
 }

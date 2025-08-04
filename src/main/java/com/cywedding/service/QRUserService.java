@@ -22,13 +22,13 @@ public class QRUserService {
     private final QRUserMapper userMapper;
     private final ImageMapper imageMapper;
 
-    public QRUser fetchQRUser(String domain, String code) {
+    public QRUser fetchQRUser(String groupName, String code) {
         logger.info("==================================================");
-        logger.info("Domain : [{}], QR CODE : [{}]", domain, code);
+        logger.info("Domain : [{}], QR CODE : [{}]", groupName, code);
         logger.info("==================================================");
 
         QRUser param = new QRUser();
-        param.setGroupName(domain);
+        param.setGroupName(groupName);
         param.setQrCode(code);
 
         QRUser user = userMapper.fetchQRUser(param);
@@ -38,10 +38,14 @@ public class QRUserService {
         return user;
     }
 
-    public Boolean validDML(String domain, String code, DMLType type) {
+    public List<QRUser> fetchQRUserList(String groupName) {
+        return userMapper.fetchQRUserList(groupName);
+    }
+
+    public Boolean validDML(String groupName, String code, DMLType type) {
         Boolean isValid = true;
 
-        QRUser user = fetchQRUser(domain, code);
+        QRUser user = fetchQRUser(groupName, code);
         if (user == null) {
             return false;
         }
@@ -84,5 +88,9 @@ public class QRUserService {
     public void updateUserList(QRUser user) { this.updateUserList(List.of(user)); }
     public void updateUserList(List<QRUser> userList) {
         userMapper.updateUserList(userList);
+    }
+
+    public void noticeSkipUser(QRUser user) {
+        userMapper.noticeSkipUser(user);
     }
 }

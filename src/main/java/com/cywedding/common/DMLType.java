@@ -5,5 +5,6 @@ public enum DMLType {
     VOTE,
     UPLOAD_CANCEL,
     VOTE_CANCEL,
-    UPLOAD_BANNED
+    UPLOAD_BANNED,
+    NOTICE,
 }
