@@ -5,6 +5,7 @@
 직접 사진을 업로드하고, 마음에 드는 사진에 투표할 수 있습니다.  
 **Spring Boot + Vue.js** 기반으로 개발되었습니다.
 
+👉[https://cy-wedding.onrender.com/qr/sampledomain/friend001](https://cy-wedding.onrender.com/qr/sampledomain/friend001)
 ---
 
 ## 🔗 QR 생성 사이트
