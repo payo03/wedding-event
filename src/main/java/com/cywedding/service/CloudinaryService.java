@@ -138,6 +138,7 @@ public class CloudinaryService {
     @Async
     @Transactional
     public void asyncBannedUser(String groupName, String code) {
+        // TEST
         QRUser bannedUser = userService.fetchQRUser(groupName, code);
         try {
             List<Image> userImageList = imageService.selectImageList(bannedUser, "P").stream()
