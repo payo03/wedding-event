@@ -223,11 +223,10 @@ public class APIController {
         logger.info("==================================================");
 
         String qrCode = infoMap.get("qrCode");
-        String fileName = infoMap.get("fileName");
 
         String message = "✅ 사용자 금지 완료! ✅";
-        try {            
-            userService.bannedUser(groupName, qrCode, fileName);
+        try {
+            cloudinaryService.asyncBannedUser(groupName, qrCode);
 
             returnMap.put("success", true);
             returnMap.put("message", message);
@@ -336,12 +335,13 @@ public class APIController {
 
         Map<String, Object> returnMap = new HashMap<>();
 
+        String qrCode = infoMap.get("qrCode");
         String fileName = infoMap.get("fileName");
         String imageUrl = infoMap.get("imageUrl");
 
         String message = "✅ 삭제 완료! ✅";
         try {
-            cloudinaryService.asyncDeleteImage(groupName, code, fileName, imageUrl);
+            cloudinaryService.asyncDeleteImage(groupName, qrCode, fileName, imageUrl);
 
             returnMap.put("success", true);
             returnMap.put("message", message);

@@ -2,6 +2,7 @@ package com.cywedding.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.cywedding.common.DMLType;
 import com.cywedding.config.UploadLimitConfig;
 import com.cywedding.dto.Image;
 import com.cywedding.dto.QRUser;
@@ -20,7 +21,9 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CloudinaryService {
@@ -129,6 +132,32 @@ public class CloudinaryService {
         } finally {
             // 3. DB 반영
             imageService.deleteImage(groupName, code, fileName);
+        }
+    }
+
+    @Async
+    @Transactional
+    public void asyncBannedUser(String groupName, String code) {
+        QRUser bannedUser = userService.fetchQRUser(groupName, code);
+        try {
+            List<Image> userImageList = imageService.selectImageList(bannedUser, "P").stream()
+                .filter(image -> image.getQrCode().equals(bannedUser.getQrCode()))
+                .collect(Collectors.toList());
+                
+            for(Image userImage : userImageList) {
+                String qrCode = userImage.getQrCode();
+                String fileName = userImage.getFileName();
+                String imageUrl = userImage.getImageUrl();
+
+                asyncDeleteImage(groupName, qrCode, fileName, imageUrl);    // Sync
+            }
+        } catch (Exception e) {
+
+        } finally {
+            // 3. DB 반영
+            bannedUser.setType(DMLType.UPLOAD_BANNED.name());
+
+            userService.updateUser(bannedUser);
         }
     }
 

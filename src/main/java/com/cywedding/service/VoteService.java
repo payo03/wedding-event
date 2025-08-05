@@ -38,7 +38,7 @@ public class VoteService {
         param.setGroupId(user.getCustomGroupId());
         param.setQrCode(code);
         param.setType(DMLType.VOTE.name());
-        userService.updateUserList(param);
+        userService.updateUser(param);
     }
 
     @Transactional
@@ -56,6 +56,6 @@ public class VoteService {
         param.setGroupId(user.getCustomGroupId());
         param.setQrCode(code);
         param.setType(DMLType.VOTE_CANCEL.name());
-        userService.updateUserList(param);
+        userService.updateUser(param);
     }
 }

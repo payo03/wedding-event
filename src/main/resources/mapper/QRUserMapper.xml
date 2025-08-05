@@ -140,7 +140,7 @@
     </select>
 
     <!-- UPDATE -->
-    <update id="updateUserList" parameterType="map">
+    <update id="updateUser" parameterType="map">
         <foreach collection="userList" item="user" separator=";">
             UPDATE qr_user
             <set>

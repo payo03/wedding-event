@@ -109,6 +109,6 @@ public class QRGroupService {
             return user;
         }).collect(Collectors.toList());
         logger.info("공지 스킵 설정된 QRUser 목록: {}", userList);
-        userMapper.updateUserList(userList);
+        userMapper.updateUser(userList);
     }
 }

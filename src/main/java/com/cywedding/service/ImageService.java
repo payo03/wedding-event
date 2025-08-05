@@ -55,7 +55,7 @@ public class ImageService {
         param.setQrCode(user.getQrCode());
         param.setType(DMLType.UPLOAD.name());
 
-        userService.updateUserList(param);
+        userService.updateUser(param);
     }
 
     public List<Image> selectImageList(QRUser user, String plan) {
@@ -78,7 +78,7 @@ public class ImageService {
         param.setQrCode(image.getQrCode());
         param.setType(DMLType.UPLOAD_CANCEL.name());
 
-        userService.updateUserList(param);
+        userService.updateUser(param);
         imageMapper.deleteImageByImage(image);
     }
 

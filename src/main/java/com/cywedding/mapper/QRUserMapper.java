@@ -14,7 +14,7 @@ public interface QRUserMapper {
     QRUser fetchQRUserAdmin(QRUser user);
     List<QRUser> fetchQRUserList(String groupName);
 
-    void updateUserList(@Param("userList") List<QRUser> userList);
+    void updateUser(@Param("userList") List<QRUser> userList);
     void noticeSkipUser(QRUser user);
 
     void resetUserList(@Param("groupId") Integer groupId);
