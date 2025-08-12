@@ -45,9 +45,7 @@
 ## 📦 외부 서비스 사용 내역
 
 - **Render**: Spring Boot 애플리케이션 호스팅  
-- **Render PostgreSQL**: PostgreSQL 기반의 클라우드 데이터베이스 (**변경됨**)  
-  - 기존 **~~NeonDB~~** 대신 Render DB 사용  
-  - **변경 사유**: Render에서 애플리케이션과 DB를 함께 운영하면 **월 무료 호스팅 시간**을 확보할 수 있어 효율적임  
+- **NeonDB**: PostgreSQL 기반의 클라우드 데이터베이스  
 - **Cloudinary**: 이미지 저장 및 URL 제공
 
 ## 🗂️ 아키텍처 요약
@@ -60,13 +58,12 @@
 
 | **서비스**     | **리소스 종류**       | **Free Tier 제공량 (2025 기준)**                                                                 | **초과 시 정책 및 제한 사항**                                                                 |
 |----------------|------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| Render         | Web 서비스 (Docker)    | - RAM: 512 MB<br>- 월 750 h 인스턴스<br>- 유휴 시 15분 후 자동 슬립              | - Compute : 월 750 h Limit |
-| **Render PostgreSQL** (변경됨) | PostgreSQL Database    | - 저장공간: 1 GB<br>- 월 무료 호스팅 시간: Web과 DB 합산 가능<br>- 월 5 GB transfer(egress) | - Compute: Web 서비스와 합산하여 750 h Limit |
-| ~~NeonDB~~     | ~~PostgreSQL Database~~ | ~~저장공간: 0.5 GB<br>- 월 191.9 h 제공<br>- 월 5 GB transfer~~ | ~~Compute: 월 191.9 h Limit~~ |
-| Cloudinary     | 이미지 저장 및 CDN     | - 매월 25 크레딧 제공<br>&nbsp;&nbsp;1. 25 GB 저장 or <br>&nbsp;&nbsp;2. 25 GB transfer(egress) or<br>&nbsp;&nbsp;3. 25,000 이미지 변환<br>- 이미지, 비디오 Max :  10mb, 100mb | - 크레딧 초과 시 업그레이드 권유<br>- Free 플랜은 시간 제한 없음, 무제한 사용(크레딧 범위 내) |
+| Render         | Web 서비스 (Docker)    | - RAM: 512 MB<br>- 월 750 h 인스턴스<br>- 유휴 시 15분 후 자동 슬립              | - Compute : 월 750 h Limit
+| NeonDB         | PostgreSQL Database    | - 저장공간: 0.5 GB<br>- 월 191.9 h  제공<br>- 월 5 GB transfer(egress)<br>- 프로젝트 Max 10개, 브랜치별 Max 500 DB | - Compute : 월 191.9 h Limit<br>&nbsp;&nbsp;(7일 23시간 54분) |
+| Cloudinary     | 이미지 저장 및 CDN     | - 매월 25 크레딧 제공<br>&nbsp;&nbsp;1. 25 GB 저장 or <br>&nbsp;&nbsp;2. 25 GB transfer(egress) or<br>&nbsp;&nbsp;3. 25,000 이미지 변환<br>- 이미지, 비디오 Max :  10mb, 100mb | - 크레딧 초과 시 업그레이드 권유<br>- Free 플랜은 시간 제한 없음, 무제한 사용(크레딧 범위 내) |
 
-> ✅ 모든 수치는 2025년 기준 **Free Tier** 기준입니다. 변동 가능성이 있으므로 각 서비스의 공식 문서를 참고하세요.  
-> 🔄 **변경사항**: NeonDB → Render PostgreSQL, 월 무료 호스팅 시간 확보 목적
+
+> ✅ 모든 수치는 2025년 기준 **Free Tier** 기준입니다. 변동 가능성이 있으므로 각 서비스의 공식 문서를 참고하세요.
 
 ## 🛠️ 기술 스택
 
@@ -75,7 +72,7 @@
 | Backend   | Spring Boot       |
 | Frontend  | Vue.js            |
 | Build Tool| Gradle            |
-| Infra     | Render, ~~NeonDB~~ → Render PostgreSQL, Cloudinary |
+| Infra     | Render, NeonDB, Cloudinary |
 
 ---
 
