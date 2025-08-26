@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.ImageMapper">
+
+    <!-- SELECT -->
+    <select id="selectImageList" parameterType="com.cywedding.dto.Image" resultType="com.cywedding.dto.Image">
+        WITH vote_count AS (
+            SELECT file_name, COUNT(*) AS count
+            FROM vote
+            GROUP BY file_name
+        )
+        SELECT
+            i.qr_code,
+            i.file_name,
+            i.image_url,
+            i.created_at,
+            CASE 
+                WHEN i.qr_code = #{qrCode} THEN TRUE
+                WHEN i.created_at &lt;= now() - interval '1 minute' THEN TRUE
+                ELSE FALSE
+            END AS is_open,
+            COALESCE(vc.count, 0) AS count
+            <if test="isEmail != true">
+                , v.qr_code AS voteQRCode
+            </if>
+        FROM image i
+        INNER JOIN qr_user qu ON i.qr_code = qu.qr_code
+            AND qu.group_id = i.group_id
+        LEFT JOIN vote_count vc ON i.file_name = vc.file_name
+        <if test="isEmail != true">
+            LEFT JOIN vote v ON v.file_name = i.file_name
+                AND v.qr_code = #{qrCode}
+        </if>
+        WHERE qu.group_id IN (0, #{groupId})
+        ORDER BY
+        <choose>
+            <when test="isEmail != true">
+                CASE WHEN i.qr_code = #{qrCode} THEN 0 ELSE 1 END,
+                COALESCE(vc.count, 0) DESC
+            </when>
+            <otherwise>
+                COALESCE(vc.count, 0) DESC
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="'E'.equals(plan)">
+                LIMIT 10
+            </when>
+            <when test="'G'.equals(plan)">
+                LIMIT 30
+            </when>
+            <otherwise>
+
+            </otherwise>
+          </choose>
+    </select>
+
+    <select id="selectImage" parameterType="string" resultType="com.cywedding.dto.Image">
+        SELECT qr_code, file_name, image_url, group_id
+        FROM image
+        WHERE file_name = #{fileName}
+    </select>
+
+    <!-- INSERT -->
+    <insert id="uploadImage" parameterType="com.cywedding.dto.Image">
+        INSERT INTO image (qr_code, file_name, image_url, group_id)
+        VALUES (#{qrCode}, #{fileName}, #{imageUrl}, #{groupId})
+    </insert>
+
+    <!-- DELETE -->
+    <insert id="deleteImageByImage" parameterType="com.cywedding.dto.Image">
+        DELETE FROM image
+        WHERE file_name = #{fileName}
+            AND group_id = #{groupId}
+    </insert>
+    <insert id="deleteImageByUser" parameterType="com.cywedding.dto.QRUser">
+        DELETE FROM image
+        WHERE qr_code = #{qrCode}
+            AND group_id = #{groupId}
+    </insert>
+
+</mapper>

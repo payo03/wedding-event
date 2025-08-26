@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.VoteMapper">
+
+    <!-- SELECT -->
+    <select id="selectVoteList" parameterType="string" resultType="com.cywedding.dto.Vote">
+        SELECT
+            file_name,
+            qr_code
+        FROM vote
+        WHERE file_name = #{fileName}
+    </select>
+
+    <!-- INSERT VOTE -->
+    <insert id="insertVote" parameterType="com.cywedding.dto.Vote">
+        INSERT INTO vote (qr_code, file_name, group_id)
+        VALUES (#{qrCode}, #{fileName}, #{groupId})
+    </insert>
+
+    <!-- DELETE VOTE -->
+    <delete id="deleteVote" parameterType="com.cywedding.dto.Vote">
+        DELETE FROM vote
+        WHERE ctid IN ( 
+            SELECT ctid
+            FROM vote
+            WHERE qr_code = #{qrCode}
+                AND group_id = #{groupId}
+            ORDER BY voted_at ASC
+            LIMIT 1
+        )
+    </delete>
+
+</mapper>

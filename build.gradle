@@ -1,0 +1,68 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.cywedding'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    implementation 'org.postgresql:postgresql'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'com.cloudinary:cloudinary-http44:1.37.0'
+	
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// --- Vue 빌드 및 정적 파일 복사 자동화 ---
+// bootJar {
+//     archiveFileName = 'app.jar'
+// }
+
+// task cleanStaticAssets(type: Delete) {
+//     delete fileTree('src/main/resources/static') {
+//         include 'assets/**'
+//     }
+// }
+
+// task buildFrontend(type: Exec) {
+//     workingDir '../front'
+//     commandLine 'npm.cmd', 'run', 'build'
+// }
+
+// task copyFront(type: Copy) {
+//     dependsOn buildFrontend, cleanStaticAssets
+
+//     from('../front/dist') {
+//         include '**/*'
+//     }
+//     into('src/main/resources/static')
+
+//     inputs.dir('../front/dist')
+//     outputs.dir('src/main/resources/static')
+// }
+
+// bootRun.dependsOn copyFront, bootJar
+// processResources.dependsOn copyFront
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

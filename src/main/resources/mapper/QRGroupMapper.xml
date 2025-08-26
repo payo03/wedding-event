@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cywedding.mapper.QRGroupMapper">
+
+    <!-- SELECT -->
+    <select id="fetchQRGroup" parameterType="string" resultType="com.cywedding.dto.QRGroup">
+        SELECT DISTINCT ON (qg.group_id)
+            qg.group_id,
+            qg.group_name,
+            qg.plan,
+            qg.image_url,
+            gp.policy_version,
+            gp.max_uploads,
+            gp.max_votes,
+            gp.voting_start,
+            gp.voting_end,
+            gp.upload_start,
+            gp.upload_end
+        FROM qr_group qg
+        JOIN group_policy gp
+            ON qg.group_id = gp.group_id
+        WHERE group_name = #{groupName}
+        ORDER BY qg.group_id, gp.policy_version DESC
+    </select>
+
+    <!-- INSERT -->
+    <insert id="createGroup" parameterType="com.cywedding.dto.QRGroup" useGeneratedKeys="true" keyProperty="groupId">
+        INSERT INTO qr_group (group_name, plan)
+        VALUES (#{groupName}, #{plan})
+    </insert>
+
+    <insert id="createPolicy" parameterType="com.cywedding.dto.QRGroup">
+        INSERT INTO group_policy (
+            group_id, max_uploads, max_votes, 
+            voting_start, voting_end, upload_start, upload_end
+        )
+        VALUES (
+            #{groupId}, #{maxUploads}, #{maxVotes}, 
+            (current_date - INTERVAL '3 days')::timestamp,
+            (current_date + INTERVAL '3 days')::timestamp,
+            (current_date - INTERVAL '3 days')::timestamp,
+            (current_date + INTERVAL '3 days')::timestamp
+        );
+    </insert>
+
+    <insert id="insertQRPolicy" parameterType="com.cywedding.dto.QRGroup">
+        INSERT INTO group_policy (
+            group_id, max_uploads, max_votes, 
+            voting_start, voting_end, upload_start, upload_end
+        )
+        VALUES (
+            #{groupId}, #{maxUploads}, #{maxVotes}, 
+            #{votingStart}, #{votingEnd},
+            #{uploadStart}, #{uploadEnd}
+        );
+    </insert>
+</mapper>
