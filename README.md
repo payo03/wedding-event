@@ -35,7 +35,7 @@
 
 | **ECO** 🪴                             | **GOLD** 🥇                                                  | **PREMIUM** 👑                                             |
 |--------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|
-| 📸 사진 업로드: **1회 제한**           | 📸 사진 업로드: **1회 제한**                                  | 📸 사진 업로드: **Custom 설정**                            |
+| 📸 사진 업로드: **1회 제한**           | 📸 사진 업로드: **1회 제한**                                  | 📸 사진 업로드: **Custom 설정(최대 10회)**                            |
 | 🗳️ 투표: **1회 제한**                  | 🗳️ 투표: **1회 제한**                                        | 🗳️ 투표: **Custom 설정**                                   |
 | ✉️ 상위 사진 이메일 전송: **10장**     | ✉️ 상위 사진 이메일 전송: **30장**                            | ✉️ 하객 사진 전체 이메일 전송: **ALL**                     |
 | 💬 문의 이메일 노출: **하단 고정 텍스트**      | 💬 문의 이메일 노출: **공지 팝업 하단 표시**<br>📢공지 이미지 등록 가능          | 💬 문의 이메일 미표기<br>📢공지 이미지 등록 가능       |
@@ -44,35 +44,63 @@
 
 ## 📦 외부 서비스 사용 내역
 
-- **Render**: Spring Boot 애플리케이션 호스팅  
-- **Aiven(PostgreSQL)** (~~NeonDB~~ 대체): PostgreSQL 기반의 클라우드 데이터베이스  
-- **Cloudinary**: 이미지 저장 및 URL 제공
+### 버전1 (초기 버전)
+- **Render**  
+  - **Static Site + Web Services (무료 플랜)** 로 프론트엔드(Vue)와 백엔드(Spring Boot) 배포  
+- **Aiven(PostgreSQL)**: PostgreSQL 기반의 클라우드 데이터베이스  
+- **Cloudinary**: 이미지 저장 및 URL 제공  
+
+### 🚀 버전2 (현재)
+- **Render**  
+  - **Static Site** 전용으로 Vue.js 프론트엔드 배포  
+- **AWS EC2**  
+  - Spring Boot 애플리케이션을 **.jar 형태로 실행**  
+- **AWS RDS (db.t4g.micro, PostgreSQL)**  
+  - 데이터베이스 전용 인스턴스
+- **Cloudinary**: 이미지 저장 및 CDN 제공  
 
 ## 🗂️ 아키텍처 요약
 
 - 사용자가 사진을 업로드하면, 이미지 파일은 **Cloudinary**에 저장되고  
-- 응답받은 `secure_url`만 **Aiven(PostgreSQL)** (~~NeonDB~~)에 저장됩니다.  
+- 응답받은 `secure_url`만 **Aiven(PostgreSQL)** (버전1: Aiven[~~NeonDB~~], 버전2: AWS RDS)에 저장됩니다.  
 - 이미지 다운로드나 이메일 전송 시에는 해당 URL을 활용하여 Cloudinary에서 직접 불러옵니다.
+- **버전1**: Render(Static Site + Web Services) + Aiven(PostgreSQL) + Cloudinary  
+- **버전2**: Render(Static Site) + EC2(Spring Boot .jar) + RDS(PostgreSQL) + Cloudinary  
 
-## 💰 Free Tier 자원 비교
+## 💰 리소스 비교
 
-| **서비스**     | **리소스 종류**       | **Free Tier 제공량 (2025 기준)**                                                                 | **초과 시 정책 및 제한 사항**                                                                 |
-|----------------|------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| **Render**     | Web 서비스 (Docker)    | - RAM: 512 MB<br>- 월 750 h 인스턴스<br>- 유휴 시 15분 후 자동 슬립                              | - Compute: 월 750 h Limit (초과 시 업그레이드 필요)                                           |
-| **Aiven**      | PostgreSQL Database    | - 단일 전용 VM (공유 아님)<br>- **1 vCPU / 1 GB RAM**<br>- **스토리지 1 GB**<br>- 백업/모니터링 제공, 콘솔/CLI/Terraform 관리<br>- **시간 제한 없음(상시 실행)** | - `max_connections = 20`, 서버측 풀링 없음(PgBouncer 미제공) → 초과 시 에러 및 업그레이드 필요<br>- VPC 피어링/정적 IP/통합/포크/지원/SLA 미제공<br>- 서비스 타입당 1개만 생성 가능<br>- 스토리지 1 GB 초과 시 업그레이드 필요 |
-| ~~NeonDB~~     | PostgreSQL Database    | ~~저장공간: 0.5 GB<br>- **월 191.9 h** 제공(Compute)<br>- 월 5 GB egress<br>- 프로젝트 Max 10개, 브랜치별 Max 500 DB~~ | ~~Compute: 월 191.9 h 제한 (7일 23시간 54분)~~ |
-| **Cloudinary** | 이미지 저장 및 CDN     | - 매월 25 크레딧 제공<br>&nbsp;&nbsp;1) 25 GB 저장 **or**<br>&nbsp;&nbsp;2) 25 GB egress **or**<br>&nbsp;&nbsp;3) 25,000 이미지 변환<br>- 파일 크기: 이미지 10 MB, 비디오 100 MB | - 크레딧 초과 시 업그레이드 권유 (시간 제한 없음, 크레딧 범위 내) |
+### 버전1 (Render + Aiven + Cloudinary)
 
-> ✅ 모든 수치는 2025년 기준 **Free Tier** 정보이며 변동 가능성이 있으므로 공식 문서를 반드시 확인하세요.
+| **서비스**     | **리소스 종류**                      | **Free Tier 제공량 (2025 기준)**    | **초과 시 정책 및 제한 사항**  |
+|----------------|-------------------------------------|-----------------------------------|-------------------------------|
+| **Render**     | Static Site + Web Services (Docker) | - Static Site: 무료<br>- Web Service: RAM 512 MB, 월 750 h 인스턴스, 유휴 시 15분 후 자동 슬립 | - Compute: 월 750 h Limit (초과 시 업그레이드 필요) |
+| **Aiven**      | PostgreSQL Database                 | - 단일 전용 VM (공유 아님)<br>- **1 vCPU / 1 GB RAM**<br>- **스토리지 1 GB**<br>- 백업/모니터링 제공, 콘솔/CLI/Terraform 관리<br>- **시간 제한 없음(상시 실행)** | - `max_connections = 20`, 서버측 풀링 없음(PgBouncer 미제공) → 초과 시 에러 및 업그레이드 필요<br>- VPC 피어링/정적 IP/통합/포크/지원/SLA 미제공<br>- 서비스 타입당 1개만 생성 가능<br>- 스토리지 1 GB 초과 시 업그레이드 필요 |
+| ~~NeonDB~~     | PostgreSQL Database                 | ~~저장공간: 0.5 GB<br>- **월 191.9 h** 제공(Compute)<br>- 월 5 GB egress<br>- 프로젝트 Max 10개, 브랜치별 Max 500 DB~~ | ~~Compute: 월 191.9 h 제한 (7일 23시간 54분)~~ |
+| **Cloudinary** | 이미지 저장 및 CDN                   | - 매월 25 크레딧 제공<br>&nbsp;&nbsp;1) 25 GB 저장 **or**<br>&nbsp;&nbsp;2) 25 GB egress **or**<br>&nbsp;&nbsp;3) 25,000 이미지 변환<br>- 파일 크기: 이미지 10 MB, 비디오 100 MB | - 크레딧 초과 시 업그레이드 권유 (시간 제한 없음, 크레딧 범위 내) |
+
+---
+
+### 🚀 버전2 (AWS EC2 + RDS + Render Static Site + Cloudinary)
+
+| 서비스         | 리소스 종류         | Free Tier 제공량 (신규 계정, 최초 12개월)        | 초과 시 요금 정책                        |
+|----------------|-------------------|-------------------------------------------------|----------------------------------------|
+| **AWS EC2**    | t3.micro          | 매월 **750시간**(1대 인스턴스 24/7 실행 가능)     | 시간 초과 시 사용 시간 기준 과금 발생     |
+| **AWS RDS**    | db.t4g.micro      | 매월 **750시간**의 Single-AZ 인스턴스 사용 + **20 GB SSD 스토리지** + **20 GB 백업 저장소**  | 시간·스토리지 초과 시 과금 발생 |
+| **Cloudinary** | 이미지 저장 및 CDN | - 매월 25 크레딧 제공<br>&nbsp;&nbsp;1) 25 GB 저장 **or**<br>&nbsp;&nbsp;2) 25 GB egress **or**<br>&nbsp;&nbsp;3) 25,000 이미지 변환<br>- 파일 크기: 이미지 10 MB, 비디오 100 MB | - 크레딧 초과 시 업그레이드 권유 (시간 제한 없음, 크레딧 범위 내) |
+> ※ Free Tier는 **계정 생성일 기준 12개월간** 유효하며, 이후 또는 초과 사용 시 요금이 발생합니다. 
+
+> ✅ 모든 수치는 2025년 기준 **Free Tier** 정보이며, AWS/Render/Cloudinary 정책에 따라 변경될 수 있습니다.  
+
 
 ## 🛠️ 기술 스택
 
-| 구분      | 사용 기술          |
-|-----------|-------------------|
-| Backend   | Spring Boot       |
-| Frontend  | Vue.js            |
-| Build Tool| Gradle            |
-| Infra     | Render, **Aiven(PostgreSQL)** (~~NeonDB~~ 대체), Cloudinary |
+| 구분          | 사용 기술          |
+|---------------|-------------------|
+| Backend       | Spring Boot       |
+| Frontend      | Vue.js            |
+| Build Tool    | Gradle            |
+| Infra (버전1) | Render, **Aiven(PostgreSQL)** (~~NeonDB~~ 대체), Cloudinary |
+| Infra (버전2) | Render(Static Site, Vue.js) + **AWS EC2 (t3.micro, Spring Boot .jar)** + **AWS RDS (db.t4g.micro, PostgreSQL)** + Cloudinary |
 
 ---
 
@@ -131,17 +159,23 @@ cd back
 
 ---
 
-
 ## ✅ TODO
 
 - [✔] **구독제 기반 기능 개발**
-  - ECO 플랜  
-    1. [✔] 투표 상위 10장 메일로 전송 
-    2. [✔] 사진 업로드 및 투표 1회 
-  - Premium 플랜  
-    1. [✔] 전체 업로드 사진을 메일로 전송 
-    2. [✔] 사진 업로드 및 투표횟수 설정 
-    3. [✔] 관리자 투표시간 설정 
+  - ECO 플랜 🌱
+    1. [✔] 사진 업로드, 투표 1회 제한
+    3. [✔] 상위 사진 10장 이메일 전송
+    4. [✔] 문의 이메일 '화면' 하단 고정 노출
+  - ECO 플랜 🥇
+    1. [✔] 상위 사진 30장 이메일 전송
+    2. [✔] 공지 팝업 기능 + 문의 이메일 '팝업' 하단 노출
+    3. [✔] 공지 이미지 등록 가능
+  - Premium 플랜 👑
+    1. [✔] 사진 업로드 최대 10회 제한
+    2. [✔] 투표 Custom 횟수 제한
+    3. [✔] 문의 이메일 문구 미표기
+    4. [✔] 전체 업로드 사진 이메일 전송
+    5. [✔] 관리자 투표시간 설정 
 
 - [✔] **병렬 결혼식 이벤트 처리**
   - 1. [✔] 동시에 여러 결혼식 이벤트가 운영될 수 있도록 구조 개선 
