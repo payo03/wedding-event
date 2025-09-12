@@ -5,8 +5,24 @@
 직접 사진을 업로드하고, 마음에 드는 사진에 투표할 수 있습니다.  
 **Spring Boot + Vue.js** 기반으로 개발되었습니다.
 
-![매니저 홈 화면](./MANAGER_HOME.png)
-![하객 홈 화면](./USER_HOME.png)
+<table>
+  <tr>
+    <td style="position: relative; text-align:center;">
+      <img src="./MANAGER_HOME.png" width="300">
+      <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%);
+                  background:rgba(0,0,0,0.5); color:white; padding:2px 6px; border-radius:4px;">
+        매니저 홈 화면
+      </div>
+    </td>
+    <td style="position: relative; text-align:center;">
+      <img src="./USER_HOME.png" width="300">
+      <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%);
+                  background:rgba(0,0,0,0.5); color:white; padding:2px 6px; border-radius:4px;">
+        하객 홈 화면
+      </div>
+    </td>
+  </tr>
+</table>
 
 ---
 
